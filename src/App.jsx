@@ -85,8 +85,19 @@ function Constellation({ matches, onSelect, selectedId }) {
 }
 
 // ---------------------------------------------------------------------------
-// Tela de login — entrar com Google via OAuth do Supabase.
+// Landing / login — apresenta o site antes de pedir pra entrar. A prévia de
+// símbolos usa uma amostra fixa (não é interativa) só para dar gosto do que
+// vem depois do login.
 // ---------------------------------------------------------------------------
+const PREVIEW_SYMBOLS = [
+  { label: "Água", category: "emocoes" },
+  { label: "Voar", category: "transformacao" },
+  { label: "Perseguição", category: "medos" },
+  { label: "Espelho", category: "emocoes" },
+  { label: "Casa", category: "emocoes" },
+  { label: "Cobra", category: "transformacao" },
+];
+
 function LoginScreen() {
   const [error, setError] = useState(null);
 
@@ -100,16 +111,30 @@ function LoginScreen() {
   }
 
   return (
-    <div className="oracle-root flex items-center justify-center min-h-screen">
+    <div className="oracle-root">
       <OracleStyles />
-      <div className="journal-page max-w-sm w-full text-center">
+      <div className="max-w-3xl mx-auto text-center pt-10 pb-16">
         <div className="oracle-eyebrow mb-2 justify-center flex items-center gap-2">
           <Moon size={12} /> onírica
         </div>
-        <p className="text-sm opacity-70 mt-2 mb-5">
-          Entre para escrever seus sonhos e ver o histórico salvo só pra você.
+        <h1 className="oracle-title">
+          O que seu sonho <em>quis dizer</em>
+        </h1>
+        <p className="oracle-sub mx-auto mt-2">
+          Escreva o sonho como ele veio até você. A gente cruza o texto com um
+          dicionário de símbolos e monta um mapa — cada elemento reconhecido
+          vira uma estrela, e juntas elas contam a mesma história por outro ângulo.
         </p>
-        <button onClick={handleGoogleLogin} className="btn-google w-full justify-center">
+
+        <div className="flex flex-wrap justify-center gap-2 mt-8 mb-10">
+          {PREVIEW_SYMBOLS.map((s) => (
+            <span key={s.label} className="preview-tag" style={{ borderColor: CATEGORY_META[s.category].color }}>
+              {s.label}
+            </span>
+          ))}
+        </div>
+
+        <button onClick={handleGoogleLogin} className="btn-google">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
             <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/>
@@ -119,6 +144,9 @@ function LoginScreen() {
           Continuar com Google
         </button>
         {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
+        <p className="text-xs opacity-40 mt-6">
+          Seus sonhos ficam privados — só você tem acesso ao seu histórico.
+        </p>
       </div>
     </div>
   );
@@ -191,6 +219,15 @@ function OracleStyles() {
       @keyframes draw-in { from { opacity: 0; } }
       .entry-card { background: var(--panel-2); border-radius: 4px; padding: 16px 18px; font-size: 14px; }
       .tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid rgba(201,195,224,0.35); color: var(--lavender); }
+      .preview-tag {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11.5px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid;
+        color: var(--moon);
+        opacity: 0.85;
+      }
       @media (prefers-reduced-motion: reduce) { .constellation-line, .btn-primary { animation: none !important; transition: none !important; } }
     `}</style>
   );
