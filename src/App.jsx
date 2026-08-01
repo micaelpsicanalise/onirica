@@ -32,27 +32,35 @@ const SYMBOLS = [
   { id: "voz", keys: ["voz desconhecida", "gritando", "grito", "gritar", "sem voz", "nao conseguia falar"], label: "Voz / Grito", category: "relacoes", meaning: "Necessidade de ser ouvida(o) — ou frustração por sentir que, mesmo tentando, sua opinião não chega às pessoas certas." },
 ];
 
-const CATEGORY_META = {
-  emocoes: { label: "Emoções", color: "var(--rose)" },
-  medos: { label: "Medos", color: "var(--teal)" },
-  transformacao: { label: "Transformação", color: "var(--amber)" },
-  relacoes: { label: "Relações", color: "var(--lavender)" },
-};
+const DEFAULT_CATEGORIES = [
+  { id: "emocoes", label: "Emoções", color: "#c97b93" },
+  { id: "medos", label: "Medos", color: "#6fa8a0" },
+  { id: "transformacao", label: "Transformação", color: "#e8a857" },
+  { id: "relacoes", label: "Relações", color: "#c9c3e0" },
+];
+
+function getCategoryMeta(categories, id) {
+  return categories.find((c) => c.id === id) ?? { id, label: id, color: "#c9c3e0" };
+}
 
 const ADMIN_EMAIL = "micaelpsicanalise@gmail.com";
 
 const EMPTY_NEW_SYMBOL = { id: "", label: "", category: "emocoes", keys: "", meaning: "" };
+const EMPTY_NEW_CATEGORY = { id: "", label: "", color: "#c9c3e0" };
 
 // ---------------------------------------------------------------------------
 // Hub de administração — só carrega dados/edita se o e-mail logado bater com
 // ADMIN_EMAIL. A proteção de verdade está nas policies de RLS do banco
-// (admin-permissions.sql); isto aqui é só a interface.
+// (admin-permissions.sql / categories-setup.sql); isto aqui é só a interface.
 // ---------------------------------------------------------------------------
-function AdminPage({ session }) {
+function AdminPage({ session, categories, reloadCategories }) {
   const [symbols, setSymbols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
   const [newSymbol, setNewSymbol] = useState(EMPTY_NEW_SYMBOL);
+  const [newCategory, setNewCategory] = useState(EMPTY_NEW_CATEGORY);
+  const [localCategories, setLocalCategories] = useState(categories);
+  const [savingCategoryId, setSavingCategoryId] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [statusMsg, setStatusMsg] = useState(null);
 
@@ -61,6 +69,10 @@ function AdminPage({ session }) {
   useEffect(() => {
     if (isAdmin) loadSymbols();
   }, [isAdmin]);
+
+  useEffect(() => {
+    setLocalCategories(categories);
+  }, [categories]);
 
   async function loadSymbols() {
     setLoading(true);
@@ -72,6 +84,10 @@ function AdminPage({ session }) {
 
   function updateLocal(id, field, value) {
     setSymbols((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+  }
+
+  function updateLocalCategory(id, field, value) {
+    setLocalCategories((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
   }
 
   async function handleSave(symbol) {
@@ -116,6 +132,39 @@ function AdminPage({ session }) {
     }
   }
 
+  async function handleSaveCategory(cat) {
+    setSavingCategoryId(cat.id);
+    setErrorMsg(null);
+    const { error } = await supabase.from("categories").update({ label: cat.label, color: cat.color }).eq("id", cat.id);
+    if (error) setErrorMsg(error.message);
+    else setStatusMsg(`Categoria "${cat.label}" salva.`);
+    setSavingCategoryId(null);
+    reloadCategories();
+  }
+
+  async function handleDeleteCategory(id) {
+    if (!confirm(`Apagar a categoria "${id}"? Símbolos que usam ela vão ficar com uma cor neutra até você trocar.`)) return;
+    const { error } = await supabase.from("categories").delete().eq("id", id);
+    if (error) setErrorMsg(error.message);
+    else reloadCategories();
+  }
+
+  async function handleCreateCategory(e) {
+    e.preventDefault();
+    setErrorMsg(null);
+    const { error } = await supabase.from("categories").insert({
+      id: newCategory.id.trim().toLowerCase().replace(/\s+/g, "-"),
+      label: newCategory.label,
+      color: newCategory.color,
+    });
+    if (error) setErrorMsg(error.message);
+    else {
+      setStatusMsg(`Categoria "${newCategory.label}" criada.`);
+      setNewCategory(EMPTY_NEW_CATEGORY);
+      reloadCategories();
+    }
+  }
+
   if (!isAdmin) {
     return (
       <div className="oracle-root flex items-center justify-center min-h-screen">
@@ -143,6 +192,36 @@ function AdminPage({ session }) {
         {errorMsg && <p className="text-xs text-red-300 mb-4">{errorMsg}</p>}
         {statusMsg && <p className="text-xs mb-4" style={{ color: "var(--amber)" }}>{statusMsg}</p>}
 
+        {/* Categorias */}
+        <div className="oracle-eyebrow mb-3">categorias</div>
+        <form onSubmit={handleCreateCategory} className="journal-page mb-5 grid sm:grid-cols-[1fr_1fr_auto_auto] gap-3 items-end">
+          <div>
+            <label className="field-label">id</label>
+            <input required placeholder="ex: nostalgia" value={newCategory.id} onChange={(e) => setNewCategory({ ...newCategory, id: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" />
+          </div>
+          <div>
+            <label className="field-label">Rótulo</label>
+            <input required placeholder="ex: Nostalgia" value={newCategory.label} onChange={(e) => setNewCategory({ ...newCategory, label: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" />
+          </div>
+          <div>
+            <label className="field-label">Cor</label>
+            <input type="color" value={newCategory.color} onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })} className="oracle-input rounded-md h-[42px] w-14 p-1" />
+          </div>
+          <button type="submit" className="btn-primary h-[42px]"><Sparkles size={15} /> Criar</button>
+        </form>
+        <div className="grid sm:grid-cols-2 gap-3 mb-10">
+          {localCategories.map((c) => (
+            <div key={c.id} className="admin-card flex items-center gap-3">
+              <input type="color" value={c.color} onChange={(e) => updateLocalCategory(c.id, "color", e.target.value)} className="rounded-md h-9 w-9 shrink-0 border-0 p-0" style={{ background: "transparent" }} />
+              <input value={c.label} onChange={(e) => updateLocalCategory(c.id, "label", e.target.value)} className="oracle-input flex-1 rounded-md px-3 py-2 text-sm" />
+              <button onClick={() => handleSaveCategory(c)} disabled={savingCategoryId === c.id} className="btn-primary text-xs py-1.5 px-3 shrink-0">
+                {savingCategoryId === c.id ? "..." : "Salvar"}
+              </button>
+              <button onClick={() => handleDeleteCategory(c.id)} className="btn-ghost text-xs py-1.5 px-3 shrink-0">Apagar</button>
+            </div>
+          ))}
+        </div>
+
         {/* Novo símbolo */}
         <form onSubmit={handleCreate} className="journal-page mb-10 space-y-4">
           <div className="oracle-eyebrow">novo símbolo</div>
@@ -159,7 +238,7 @@ function AdminPage({ session }) {
           <div>
             <label className="field-label">Categoria</label>
             <select value={newSymbol.category} onChange={(e) => setNewSymbol({ ...newSymbol, category: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm">
-              {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
+              {localCategories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
           </div>
           <div>
@@ -175,6 +254,7 @@ function AdminPage({ session }) {
 
         {/* Lista existente */}
         {loading && <p className="text-sm opacity-50">Carregando...</p>}
+        <div className="oracle-eyebrow mb-3">símbolos</div>
         <div className="space-y-5">
           {symbols.map((s) => (
             <div key={s.id} className="admin-card space-y-4">
@@ -186,7 +266,7 @@ function AdminPage({ session }) {
                 <div>
                   <label className="field-label">Categoria</label>
                   <select value={s.category} onChange={(e) => updateLocal(s.id, "category", e.target.value)} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm">
-                    {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
+                    {localCategories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                 </div>
               </div>
@@ -237,7 +317,7 @@ function matchSymbols(text, symbolsList) {
   );
 }
 
-function Constellation({ matches, onSelect, selectedId }) {
+function Constellation({ matches, onSelect, selectedId, categories }) {
   const n = matches.length;
   const size = 320;
   const cx = size / 2;
@@ -257,7 +337,7 @@ function Constellation({ matches, onSelect, selectedId }) {
         ))
       )}
       {points.map((p) => {
-        const meta = CATEGORY_META[p.category];
+        const meta = getCategoryMeta(categories, p.category);
         const isSelected = selectedId === p.id;
         return (
           <g key={p.id} transform={`translate(${p.x}, ${p.y})`} onClick={() => onSelect(p.id)} className="constellation-star" style={{ cursor: "pointer" }}>
@@ -287,7 +367,7 @@ const PREVIEW_SYMBOLS = [
   { label: "Cobra", category: "transformacao" },
 ];
 
-function LoginScreen() {
+function LoginScreen({ categories }) {
   const [error, setError] = useState(null);
 
   async function handleGoogleLogin() {
@@ -303,7 +383,7 @@ function LoginScreen() {
     <div className="oracle-root landing-root">
       <OracleStyles />
       <div className="landing-constellation">
-        <Constellation matches={PREVIEW_SYMBOLS.map((s, i) => ({ ...s, id: `preview-${i}` }))} onSelect={() => {}} selectedId={null} />
+        <Constellation matches={PREVIEW_SYMBOLS.map((s, i) => ({ ...s, id: `preview-${i}` }))} onSelect={() => {}} selectedId={null} categories={categories} />
       </div>
       <div className="max-w-2xl mx-auto text-center relative z-10">
         <div className="oracle-eyebrow mb-2 justify-center flex items-center gap-2">
@@ -320,7 +400,7 @@ function LoginScreen() {
 
         <div className="preview-tags mt-8 mb-10">
           {PREVIEW_SYMBOLS.map((s) => (
-            <span key={s.label} className="preview-tag" style={{ borderColor: CATEGORY_META[s.category].color }}>
+            <span key={s.label} className="preview-tag" style={{ borderColor: getCategoryMeta(categories, s.category).color }}>
               {s.label}
             </span>
           ))}
@@ -469,7 +549,7 @@ function OracleStyles() {
   );
 }
 
-function DreamOracle({ session }) {
+function DreamOracle({ session, categories }) {
   const [dreamText, setDreamText] = useState("");
   const [matches, setMatches] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
@@ -613,10 +693,10 @@ function DreamOracle({ session }) {
             )}
             {matches && matches.length > 0 && (
               <div className="space-y-5">
-                <Constellation matches={matches} onSelect={setSelectedId} selectedId={selectedId} />
+                <Constellation matches={matches} onSelect={setSelectedId} selectedId={selectedId} categories={categories} />
                 {selected && (
                   <div className="result-card">
-                    <div className="meaning-eyebrow">{CATEGORY_META[selected.category].label}</div>
+                    <div className="meaning-eyebrow">{getCategoryMeta(categories, selected.category).label}</div>
                     <h3>{selected.label}</h3>
                     <p>{selected.meaning}</p>
                   </div>
@@ -666,6 +746,7 @@ function DreamOracle({ session }) {
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = ainda carregando
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const isAdminRoute = new URLSearchParams(window.location.search).get("admin") === "1";
 
   useEffect(() => {
@@ -673,11 +754,17 @@ export default function App() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
     });
+    loadCategories();
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  async function loadCategories() {
+    const { data, error } = await supabase.from("categories").select("*");
+    if (!error && data && data.length > 0) setCategories(data);
+  }
+
   if (session === undefined) return null; // ou um spinner, se preferir
-  if (!session) return <LoginScreen />;
-  if (isAdminRoute) return <AdminPage session={session} />;
-  return <DreamOracle session={session} />;
+  if (!session) return <LoginScreen categories={categories} />;
+  if (isAdminRoute) return <AdminPage session={session} categories={categories} reloadCategories={loadCategories} />;
+  return <DreamOracle session={session} categories={categories} />;
 }
