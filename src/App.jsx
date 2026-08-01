@@ -196,9 +196,18 @@ function normalize(str) {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function matchSymbols(text) {
   const norm = normalize(text);
-  return SYMBOLS.filter((s) => s.keys.some((k) => norm.includes(k)));
+  return SYMBOLS.filter((s) =>
+    s.keys.some((k) => {
+      const pattern = new RegExp(`\\b${escapeRegex(normalize(k))}\\b`, "i");
+      return pattern.test(norm);
+    })
+  );
 }
 
 function Constellation({ matches, onSelect, selectedId }) {
