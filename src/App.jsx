@@ -144,38 +144,65 @@ function AdminPage({ session }) {
         {statusMsg && <p className="text-xs mb-4" style={{ color: "var(--amber)" }}>{statusMsg}</p>}
 
         {/* Novo símbolo */}
-        <form onSubmit={handleCreate} className="journal-page mb-10 grid gap-3">
+        <form onSubmit={handleCreate} className="journal-page mb-10 space-y-4">
           <div className="oracle-eyebrow">novo símbolo</div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <input required placeholder="id (ex: tempestade)" value={newSymbol.id} onChange={(e) => setNewSymbol({ ...newSymbol, id: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" />
-            <input required placeholder="Rótulo (ex: Tempestade)" value={newSymbol.label} onChange={(e) => setNewSymbol({ ...newSymbol, label: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="field-label">id (identificador único)</label>
+              <input required placeholder="ex: tempestade" value={newSymbol.id} onChange={(e) => setNewSymbol({ ...newSymbol, id: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" />
+            </div>
+            <div>
+              <label className="field-label">Rótulo</label>
+              <input required placeholder="ex: Tempestade" value={newSymbol.label} onChange={(e) => setNewSymbol({ ...newSymbol, label: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" />
+            </div>
           </div>
-          <select value={newSymbol.category} onChange={(e) => setNewSymbol({ ...newSymbol, category: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm">
-            {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
-          </select>
-          <input required placeholder="Palavras-chave separadas por vírgula" value={newSymbol.keys} onChange={(e) => setNewSymbol({ ...newSymbol, keys: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" />
-          <textarea required placeholder="Significado" value={newSymbol.meaning} onChange={(e) => setNewSymbol({ ...newSymbol, meaning: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" rows={2} style={{ fontFamily: "Inter, sans-serif", fontStyle: "normal" }} />
-          <button type="submit" className="btn-primary justify-self-start"><Sparkles size={15} /> Criar símbolo</button>
+          <div>
+            <label className="field-label">Categoria</label>
+            <select value={newSymbol.category} onChange={(e) => setNewSymbol({ ...newSymbol, category: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm">
+              {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="field-label">Palavras-chave (separadas por vírgula)</label>
+            <input required placeholder="trovão, relâmpago, tempestade" value={newSymbol.keys} onChange={(e) => setNewSymbol({ ...newSymbol, keys: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" />
+          </div>
+          <div>
+            <label className="field-label">Significado</label>
+            <textarea required placeholder="O que esse símbolo costuma representar..." value={newSymbol.meaning} onChange={(e) => setNewSymbol({ ...newSymbol, meaning: e.target.value })} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" rows={3} style={{ fontFamily: "Inter, sans-serif", fontStyle: "normal" }} />
+          </div>
+          <button type="submit" className="btn-primary"><Sparkles size={15} /> Criar símbolo</button>
         </form>
 
         {/* Lista existente */}
         {loading && <p className="text-sm opacity-50">Carregando...</p>}
-        <div className="space-y-4">
+        <div className="space-y-5">
           {symbols.map((s) => (
-            <div key={s.id} className="entry-card grid gap-2">
-              <div className="grid sm:grid-cols-2 gap-2">
-                <input value={s.label} onChange={(e) => updateLocal(s.id, "label", e.target.value)} className="oracle-input rounded-md px-3 py-2 text-sm" />
-                <select value={s.category} onChange={(e) => updateLocal(s.id, "category", e.target.value)} className="oracle-input rounded-md px-3 py-2 text-sm">
-                  {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
-                </select>
+            <div key={s.id} className="admin-card space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="field-label">Rótulo</label>
+                  <input value={s.label} onChange={(e) => updateLocal(s.id, "label", e.target.value)} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="field-label">Categoria</label>
+                  <select value={s.category} onChange={(e) => updateLocal(s.id, "category", e.target.value)} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm">
+                    {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
+                  </select>
+                </div>
               </div>
-              <input
-                value={Array.isArray(s.keys) ? s.keys.join(", ") : s.keys}
-                onChange={(e) => updateLocal(s.id, "keys", e.target.value)}
-                className="oracle-input rounded-md px-3 py-2 text-sm"
-              />
-              <textarea value={s.meaning} onChange={(e) => updateLocal(s.id, "meaning", e.target.value)} rows={2} className="oracle-input rounded-md px-3 py-2 text-sm" style={{ fontFamily: "Inter, sans-serif", fontStyle: "normal" }} />
-              <div className="flex justify-between items-center">
+              <div>
+                <label className="field-label">Palavras-chave (separadas por vírgula)</label>
+                <input
+                  value={Array.isArray(s.keys) ? s.keys.join(", ") : s.keys}
+                  onChange={(e) => updateLocal(s.id, "keys", e.target.value)}
+                  className="oracle-input w-full rounded-md px-3 py-2.5 text-sm"
+                />
+              </div>
+              <div>
+                <label className="field-label">Significado</label>
+                <textarea value={s.meaning} onChange={(e) => updateLocal(s.id, "meaning", e.target.value)} rows={3} className="oracle-input w-full rounded-md px-3 py-2.5 text-sm" style={{ fontFamily: "Inter, sans-serif", fontStyle: "normal" }} />
+              </div>
+              <div className="flex justify-between items-center pt-1">
                 <span className="text-xs opacity-40 font-mono">id: {s.id}</span>
                 <div className="flex gap-2">
                   <button onClick={() => handleDelete(s.id)} className="btn-ghost text-xs py-1.5 px-3">Apagar</button>
@@ -383,6 +410,22 @@ function OracleStyles() {
       .constellation-line { animation: draw-in 0.6s ease forwards; }
       @keyframes draw-in { from { opacity: 0; } }
       .entry-card { background: var(--panel-2); border-radius: 4px; padding: 16px 18px; font-size: 14px; }
+      .admin-card {
+        background: var(--panel-2);
+        border-radius: 8px;
+        padding: 22px 24px;
+        border: 1px solid rgba(201,195,224,0.12);
+      }
+      .field-label {
+        display: block;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--lavender);
+        opacity: 0.65;
+        margin-bottom: 6px;
+      }
       .tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid rgba(201,195,224,0.35); color: var(--lavender); }
       .preview-tag {
         font-family: 'IBM Plex Mono', monospace;
