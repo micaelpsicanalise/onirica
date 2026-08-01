@@ -546,10 +546,17 @@ function DreamOracle({ session }) {
               </div>
             )}
             {matches && matches.length === 0 && (
-              <div className="result-card">
-                <div className="meaning-eyebrow">Nenhum símbolo reconhecido</div>
-                <h3>Esse sonho é só seu, por enquanto</h3>
-                <p>Não encontrei nenhuma palavra do nosso dicionário nesse texto. Tente descrever elementos mais concretos — lugares, animais, ações — e eu procuro de novo.</p>
+              <div className="space-y-5">
+                <div className="result-card">
+                  <div className="meaning-eyebrow">Nenhum símbolo reconhecido</div>
+                  <h3>Esse sonho é só seu, por enquanto</h3>
+                  <p>Não encontrei nenhuma palavra do nosso dicionário nesse texto. Ainda assim, você pode guardar o sonho no seu histórico — o dicionário só ajuda com a interpretação, ele não decide o que vale a pena lembrar.</p>
+                </div>
+                <div className="flex justify-end">
+                  <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                    <BookOpen size={15} /> {saving ? "Salvando..." : "Salvar no meu histórico"}
+                  </button>
+                </div>
               </div>
             )}
             {matches && matches.length > 0 && (
