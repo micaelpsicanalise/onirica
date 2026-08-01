@@ -169,7 +169,8 @@ function AdminPage({ session, categories, reloadCategories }) {
     return (
       <div className="oracle-root flex items-center justify-center min-h-screen">
         <OracleStyles />
-        <div className="result-card max-w-sm text-center">
+        <Starfield />
+        <div className="result-card max-w-sm text-center relative z-10">
           <h3>Acesso restrito</h3>
           <p>Essa página é só para administração do dicionário. Sua conta ({session.user.email}) não tem acesso.</p>
         </div>
@@ -180,7 +181,8 @@ function AdminPage({ session, categories, reloadCategories }) {
   return (
     <div className="oracle-root">
       <OracleStyles />
-      <div className="max-w-4xl mx-auto">
+      <Starfield />
+      <div className="max-w-4xl mx-auto relative z-10">
         <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
           <div>
             <div className="oracle-eyebrow flex items-center gap-2"><Moon size={12} /> hub de administração</div>
@@ -382,6 +384,7 @@ function LoginScreen({ categories }) {
   return (
     <div className="oracle-root landing-root">
       <OracleStyles />
+      <Starfield />
       <div className="landing-constellation">
         <Constellation matches={PREVIEW_SYMBOLS.map((s, i) => ({ ...s, id: `preview-${i}` }))} onSelect={() => {}} selectedId={null} categories={categories} />
       </div>
@@ -424,6 +427,68 @@ function LoginScreen({ categories }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Campo de estrelas + "bursts" de brilho no fundo. Posições geradas uma única
+// vez (fora do componente) para não recalcular a cada renderização.
+// ---------------------------------------------------------------------------
+const STAR_POSITIONS = Array.from({ length: 55 }, () => ({
+  top: Math.random() * 100,
+  left: Math.random() * 100,
+  size: 1 + Math.random() * 1.8,
+  opacity: 0.25 + Math.random() * 0.55,
+  delay: Math.random() * 6,
+}));
+
+const BURST_POSITIONS = [
+  { top: 12, left: 8, size: 22, color: "var(--amber)", delay: 0 },
+  { top: 78, left: 15, size: 16, color: "var(--rose)", delay: 1.2 },
+  { top: 22, left: 90, size: 18, color: "var(--lavender)", delay: 2.4 },
+  { top: 62, left: 82, size: 24, color: "var(--teal)", delay: 0.6 },
+  { top: 90, left: 55, size: 14, color: "var(--amber)", delay: 3 },
+  { top: 8, left: 45, size: 16, color: "var(--lavender)", delay: 1.8 },
+];
+
+function Burst({ size, color }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className="burst-spark">
+      <path
+        d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
+        fill={color}
+      />
+    </svg>
+  );
+}
+
+function Starfield() {
+  return (
+    <div className="starfield" aria-hidden="true">
+      {STAR_POSITIONS.map((s, i) => (
+        <span
+          key={i}
+          className="star"
+          style={{
+            top: `${s.top}%`,
+            left: `${s.left}%`,
+            width: `${s.size}px`,
+            height: `${s.size}px`,
+            opacity: s.opacity,
+            animationDelay: `${s.delay}s`,
+          }}
+        />
+      ))}
+      {BURST_POSITIONS.map((b, i) => (
+        <div
+          key={i}
+          className="burst"
+          style={{ top: `${b.top}%`, left: `${b.left}%`, animationDelay: `${b.delay}s` }}
+        >
+          <Burst size={b.size} color={b.color} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function OracleStyles() {
   return (
     <style>{`
@@ -435,6 +500,33 @@ function OracleStyles() {
         background-image: radial-gradient(circle at 15% 10%, rgba(201,195,224,0.06), transparent 40%),
                           radial-gradient(circle at 85% 90%, rgba(232,168,87,0.05), transparent 45%);
         color: var(--moon); font-family: 'Inter', sans-serif; min-height: 100%; padding: 48px 24px 64px;
+        position: relative;
+        overflow: hidden;
+      }
+      .starfield { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+      .star {
+        position: absolute;
+        border-radius: 50%;
+        background: var(--moon);
+        animation: twinkle 4.5s ease-in-out infinite;
+      }
+      @keyframes twinkle {
+        0%, 100% { opacity: var(--min-o, 0.2); }
+        50% { opacity: 1; }
+      }
+      .burst {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        opacity: 0.5;
+        animation: burst-pulse 5s ease-in-out infinite;
+      }
+      .burst-spark { display: block; }
+      @keyframes burst-pulse {
+        0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(0.85) rotate(0deg); }
+        50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1) rotate(8deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .star, .burst { animation: none !important; }
       }
       .oracle-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--lavender); opacity: 0.75; }
       .oracle-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(32px, 5vw, 52px); line-height: 1.05; margin: 10px 0 6px; }
@@ -636,7 +728,8 @@ function DreamOracle({ session, categories }) {
   return (
     <div className="oracle-root">
       <OracleStyles />
-      <div className="max-w-5xl mx-auto">
+      <Starfield />
+      <div className="max-w-5xl mx-auto relative z-10">
         <div className="flex items-start justify-between flex-wrap gap-6 mb-10">
           <div>
             <div className="oracle-eyebrow flex items-center gap-2">
