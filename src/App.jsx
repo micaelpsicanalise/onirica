@@ -111,9 +111,12 @@ function LoginScreen() {
   }
 
   return (
-    <div className="oracle-root">
+    <div className="oracle-root landing-root">
       <OracleStyles />
-      <div className="max-w-3xl mx-auto text-center pt-10 pb-16">
+      <div className="landing-constellation">
+        <Constellation matches={PREVIEW_SYMBOLS.map((s, i) => ({ ...s, id: `preview-${i}` }))} onSelect={() => {}} selectedId={null} />
+      </div>
+      <div className="max-w-2xl mx-auto text-center relative z-10">
         <div className="oracle-eyebrow mb-2 justify-center flex items-center gap-2">
           <Moon size={12} /> onírica
         </div>
@@ -126,7 +129,7 @@ function LoginScreen() {
           vira uma estrela, e juntas elas contam a mesma história por outro ângulo.
         </p>
 
-        <div className="flex flex-wrap justify-center gap-2 mt-8 mb-10">
+        <div className="preview-tags mt-8 mb-10">
           {PREVIEW_SYMBOLS.map((s) => (
             <span key={s.label} className="preview-tag" style={{ borderColor: CATEGORY_META[s.category].color }}>
               {s.label}
@@ -228,6 +231,34 @@ function OracleStyles() {
         color: var(--moon);
         opacity: 0.85;
       }
+      .preview-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .landing-root {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 32px 24px;
+      }
+      .landing-constellation {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(720px, 140vw);
+        opacity: 0.16;
+        pointer-events: none;
+      }
+      .landing-constellation svg { max-width: none; width: 100%; }
       @media (prefers-reduced-motion: reduce) { .constellation-line, .btn-primary { animation: none !important; transition: none !important; } }
     `}</style>
   );
