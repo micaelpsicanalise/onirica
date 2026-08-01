@@ -39,6 +39,159 @@ const CATEGORY_META = {
   relacoes: { label: "Relações", color: "var(--lavender)" },
 };
 
+const ADMIN_EMAIL = "micaelpsicanalise@gmail.com";
+
+const EMPTY_NEW_SYMBOL = { id: "", label: "", category: "emocoes", keys: "", meaning: "" };
+
+// ---------------------------------------------------------------------------
+// Hub de administração — só carrega dados/edita se o e-mail logado bater com
+// ADMIN_EMAIL. A proteção de verdade está nas policies de RLS do banco
+// (admin-permissions.sql); isto aqui é só a interface.
+// ---------------------------------------------------------------------------
+function AdminPage({ session }) {
+  const [symbols, setSymbols] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState(null);
+  const [newSymbol, setNewSymbol] = useState(EMPTY_NEW_SYMBOL);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [statusMsg, setStatusMsg] = useState(null);
+
+  const isAdmin = session.user.email === ADMIN_EMAIL;
+
+  useEffect(() => {
+    if (isAdmin) loadSymbols();
+  }, [isAdmin]);
+
+  async function loadSymbols() {
+    setLoading(true);
+    const { data, error } = await supabase.from("symbols").select("*").order("label");
+    if (error) setErrorMsg(error.message);
+    else setSymbols(data ?? []);
+    setLoading(false);
+  }
+
+  function updateLocal(id, field, value) {
+    setSymbols((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+  }
+
+  async function handleSave(symbol) {
+    setSavingId(symbol.id);
+    setErrorMsg(null);
+    const keysArray = Array.isArray(symbol.keys)
+      ? symbol.keys
+      : symbol.keys.split(",").map((k) => k.trim()).filter(Boolean);
+    const { error } = await supabase
+      .from("symbols")
+      .update({ label: symbol.label, category: symbol.category, keys: keysArray, meaning: symbol.meaning })
+      .eq("id", symbol.id);
+    if (error) setErrorMsg(error.message);
+    else setStatusMsg(`"${symbol.label}" salvo.`);
+    setSavingId(null);
+    loadSymbols();
+  }
+
+  async function handleDelete(id) {
+    if (!confirm(`Apagar o símbolo "${id}"? Isso não pode ser desfeito.`)) return;
+    const { error } = await supabase.from("symbols").delete().eq("id", id);
+    if (error) setErrorMsg(error.message);
+    else setSymbols((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  async function handleCreate(e) {
+    e.preventDefault();
+    setErrorMsg(null);
+    const keysArray = newSymbol.keys.split(",").map((k) => k.trim()).filter(Boolean);
+    const { error } = await supabase.from("symbols").insert({
+      id: newSymbol.id.trim().toLowerCase().replace(/\s+/g, "-"),
+      label: newSymbol.label,
+      category: newSymbol.category,
+      keys: keysArray,
+      meaning: newSymbol.meaning,
+    });
+    if (error) setErrorMsg(error.message);
+    else {
+      setStatusMsg(`"${newSymbol.label}" criado.`);
+      setNewSymbol(EMPTY_NEW_SYMBOL);
+      loadSymbols();
+    }
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="oracle-root flex items-center justify-center min-h-screen">
+        <OracleStyles />
+        <div className="result-card max-w-sm text-center">
+          <h3>Acesso restrito</h3>
+          <p>Essa página é só para administração do dicionário. Sua conta ({session.user.email}) não tem acesso.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="oracle-root">
+      <OracleStyles />
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
+          <div>
+            <div className="oracle-eyebrow flex items-center gap-2"><Moon size={12} /> hub de administração</div>
+            <h1 className="oracle-title" style={{ fontSize: "34px" }}>Dicionário de símbolos</h1>
+          </div>
+          <a href={import.meta.env.BASE_URL} className="btn-ghost">← Voltar ao site</a>
+        </div>
+
+        {errorMsg && <p className="text-xs text-red-300 mb-4">{errorMsg}</p>}
+        {statusMsg && <p className="text-xs mb-4" style={{ color: "var(--amber)" }}>{statusMsg}</p>}
+
+        {/* Novo símbolo */}
+        <form onSubmit={handleCreate} className="journal-page mb-10 grid gap-3">
+          <div className="oracle-eyebrow">novo símbolo</div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <input required placeholder="id (ex: tempestade)" value={newSymbol.id} onChange={(e) => setNewSymbol({ ...newSymbol, id: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" />
+            <input required placeholder="Rótulo (ex: Tempestade)" value={newSymbol.label} onChange={(e) => setNewSymbol({ ...newSymbol, label: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" />
+          </div>
+          <select value={newSymbol.category} onChange={(e) => setNewSymbol({ ...newSymbol, category: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm">
+            {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
+          </select>
+          <input required placeholder="Palavras-chave separadas por vírgula" value={newSymbol.keys} onChange={(e) => setNewSymbol({ ...newSymbol, keys: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" />
+          <textarea required placeholder="Significado" value={newSymbol.meaning} onChange={(e) => setNewSymbol({ ...newSymbol, meaning: e.target.value })} className="oracle-input rounded-md px-3 py-2 text-sm" rows={2} style={{ fontFamily: "Inter, sans-serif", fontStyle: "normal" }} />
+          <button type="submit" className="btn-primary justify-self-start"><Sparkles size={15} /> Criar símbolo</button>
+        </form>
+
+        {/* Lista existente */}
+        {loading && <p className="text-sm opacity-50">Carregando...</p>}
+        <div className="space-y-4">
+          {symbols.map((s) => (
+            <div key={s.id} className="entry-card grid gap-2">
+              <div className="grid sm:grid-cols-2 gap-2">
+                <input value={s.label} onChange={(e) => updateLocal(s.id, "label", e.target.value)} className="oracle-input rounded-md px-3 py-2 text-sm" />
+                <select value={s.category} onChange={(e) => updateLocal(s.id, "category", e.target.value)} className="oracle-input rounded-md px-3 py-2 text-sm">
+                  {Object.entries(CATEGORY_META).map(([key, meta]) => <option key={key} value={key}>{meta.label}</option>)}
+                </select>
+              </div>
+              <input
+                value={Array.isArray(s.keys) ? s.keys.join(", ") : s.keys}
+                onChange={(e) => updateLocal(s.id, "keys", e.target.value)}
+                className="oracle-input rounded-md px-3 py-2 text-sm"
+              />
+              <textarea value={s.meaning} onChange={(e) => updateLocal(s.id, "meaning", e.target.value)} rows={2} className="oracle-input rounded-md px-3 py-2 text-sm" style={{ fontFamily: "Inter, sans-serif", fontStyle: "normal" }} />
+              <div className="flex justify-between items-center">
+                <span className="text-xs opacity-40 font-mono">id: {s.id}</span>
+                <div className="flex gap-2">
+                  <button onClick={() => handleDelete(s.id)} className="btn-ghost text-xs py-1.5 px-3">Apagar</button>
+                  <button onClick={() => handleSave(s)} disabled={savingId === s.id} className="btn-primary text-xs py-1.5 px-3">
+                    {savingId === s.id ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function normalize(str) {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -346,9 +499,14 @@ function DreamOracle({ session }) {
               estrela no seu mapa — juntas, elas contam a mesma história por outro ângulo.
             </p>
           </div>
-          <button className="btn-ghost flex items-center gap-2" onClick={() => supabase.auth.signOut()}>
-            <LogOut size={14} /> Sair ({session.user.email})
-          </button>
+          <div className="flex items-center gap-2">
+            {session.user.email === ADMIN_EMAIL && (
+              <a href="?admin=1" className="btn-ghost text-xs py-1.5 px-3">Admin</a>
+            )}
+            <button className="btn-ghost flex items-center gap-2" onClick={() => supabase.auth.signOut()}>
+              <LogOut size={14} /> Sair ({session.user.email})
+            </button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -440,6 +598,7 @@ function DreamOracle({ session }) {
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = ainda carregando
+  const isAdminRoute = new URLSearchParams(window.location.search).get("admin") === "1";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -451,5 +610,6 @@ export default function App() {
 
   if (session === undefined) return null; // ou um spinner, se preferir
   if (!session) return <LoginScreen />;
+  if (isAdminRoute) return <AdminPage session={session} />;
   return <DreamOracle session={session} />;
 }
