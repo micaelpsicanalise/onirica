@@ -209,11 +209,11 @@ function AdminPage({ session, categories, reloadCategories }) {
           </div>
           <button type="submit" className="btn-primary h-[42px]"><Sparkles size={15} /> Criar</button>
         </form>
-        <div className="grid sm:grid-cols-2 gap-3 mb-10">
+        <div className="space-y-2 mb-10">
           {localCategories.map((c) => (
-            <div key={c.id} className="admin-card flex items-center gap-3">
-              <input type="color" value={c.color} onChange={(e) => updateLocalCategory(c.id, "color", e.target.value)} className="rounded-md h-9 w-9 shrink-0 border-0 p-0" style={{ background: "transparent" }} />
-              <input value={c.label} onChange={(e) => updateLocalCategory(c.id, "label", e.target.value)} className="oracle-input flex-1 rounded-md px-3 py-2 text-sm" />
+            <div key={c.id} className="category-row">
+              <input type="color" value={c.color} onChange={(e) => updateLocalCategory(c.id, "color", e.target.value)} className="rounded-md h-9 w-9 shrink-0 border-0 p-0 cursor-pointer" style={{ background: "transparent" }} />
+              <input value={c.label} onChange={(e) => updateLocalCategory(c.id, "label", e.target.value)} className="oracle-input flex-1 min-w-0 rounded-md px-3 py-2 text-sm" />
               <button onClick={() => handleSaveCategory(c)} disabled={savingCategoryId === c.id} className="btn-primary text-xs py-1.5 px-3 shrink-0">
                 {savingCategoryId === c.id ? "..." : "Salvar"}
               </button>
@@ -495,6 +495,16 @@ function OracleStyles() {
         border-radius: 8px;
         padding: 22px 24px;
         border: 1px solid rgba(201,195,224,0.12);
+      }
+      .category-row {
+        background: var(--panel-2);
+        border-radius: 8px;
+        padding: 10px 14px;
+        border: 1px solid rgba(201,195,224,0.12);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
       .field-label {
         display: block;
