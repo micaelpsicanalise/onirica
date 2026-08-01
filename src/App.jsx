@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Moon, Sparkles, BookOpen, Send, X, Star, LogOut } from "lucide-react";
+import { Moon, Sparkles, BookOpen, X, LogOut } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
 // ---------------------------------------------------------------------------
@@ -85,20 +85,18 @@ function Constellation({ matches, onSelect, selectedId }) {
 }
 
 // ---------------------------------------------------------------------------
-// Tela de login — magic link (sem senha). Supabase envia um e-mail com um
-// link; ao clicar, o usuário volta autenticado para o app.
+// Tela de login — entrar com Google via OAuth do Supabase.
 // ---------------------------------------------------------------------------
 function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
 
-  async function handleLogin(e) {
-    e.preventDefault();
+  async function handleGoogleLogin() {
     setError(null);
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
+    });
     if (error) setError(error.message);
-    else setSent(true);
   }
 
   return (
@@ -108,27 +106,19 @@ function LoginScreen() {
         <div className="oracle-eyebrow mb-2 justify-center flex items-center gap-2">
           <Moon size={12} /> onírica
         </div>
-        {!sent ? (
-          <form onSubmit={handleLogin} className="mt-4 space-y-3">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="w-full bg-transparent border border-white/20 rounded-full px-4 py-2.5 text-sm text-center outline-none"
-              style={{ color: "var(--moon)" }}
-            />
-            <button type="submit" className="btn-primary w-full justify-center">
-              <Send size={14} /> Entrar com link mágico
-            </button>
-            {error && <p className="text-xs text-red-300 mt-2">{error}</p>}
-          </form>
-        ) : (
-          <p className="text-sm mt-4 opacity-80">
-            Enviamos um link para <strong>{email}</strong>. Abra seu e-mail e clique nele para entrar.
-          </p>
-        )}
+        <p className="text-sm opacity-70 mt-2 mb-5">
+          Entre para escrever seus sonhos e ver o histórico salvo só pra você.
+        </p>
+        <button onClick={handleGoogleLogin} className="btn-google w-full justify-center">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03z"/>
+            <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"/>
+          </svg>
+          Continuar com Google
+        </button>
+        {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
       </div>
     </div>
   );
@@ -160,7 +150,38 @@ function OracleStyles() {
       .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(232,168,87,0.25); }
       .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
       .btn-ghost { background: transparent; color: var(--lavender); border: 1px solid rgba(201,195,224,0.3); border-radius: 999px; padding: 11px 20px; font-size: 14px; cursor: pointer; }
+      .oracle-input {
+        background: var(--panel-2);
+        border: 1px solid rgba(201,195,224,0.3);
+        color: var(--moon);
+        color-scheme: dark;
+      }
+      .oracle-input::placeholder { color: rgba(244,241,234,0.4); }
+      .oracle-input:focus { border-color: var(--amber); }
+      /* Sobrescreve o fundo branco que o Chrome/Safari forçam no autofill */
+      .oracle-input:-webkit-autofill,
+      .oracle-input:-webkit-autofill:hover,
+      .oracle-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--moon);
+        -webkit-box-shadow: 0 0 0px 1000px var(--panel-2) inset;
+        transition: background-color 9999s ease-in-out 0s;
+      }
       .btn-ghost:hover { border-color: var(--lavender); color: var(--moon); }
+      .btn-google {
+        background: var(--moon);
+        color: #1f1f1f;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        border-radius: 999px;
+        padding: 11px 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .btn-google:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(244,241,234,0.15); }
       .result-card { background: var(--moon); color: var(--ink); border-radius: 4px; padding: 32px 28px; }
       .result-card .meaning-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; }
       .result-card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; margin: 6px 0 12px; }
