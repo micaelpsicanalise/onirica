@@ -200,9 +200,9 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function matchSymbols(text) {
+function matchSymbols(text, symbolsList) {
   const norm = normalize(text);
-  return SYMBOLS.filter((s) =>
+  return symbolsList.filter((s) =>
     s.keys.some((k) => {
       const pattern = new RegExp(`\\b${escapeRegex(normalize(k))}\\b`, "i");
       return pattern.test(norm);
@@ -434,11 +434,20 @@ function DreamOracle({ session }) {
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [symbolsDict, setSymbolsDict] = useState(SYMBOLS); // começa com o fallback local
   const resultRef = useRef(null);
 
   useEffect(() => {
     loadEntries();
+    loadSymbolsDict();
   }, []);
+
+  async function loadSymbolsDict() {
+    const { data, error } = await supabase.from("symbols").select("*");
+    // Se o banco tiver dados, usa eles (fica em dia com o que foi editado no Admin).
+    // Se falhar ou vier vazio, mantém o dicionário local como fallback.
+    if (!error && data && data.length > 0) setSymbolsDict(data);
+  }
 
   async function loadEntries() {
     setLoadingEntries(true);
@@ -454,7 +463,7 @@ function DreamOracle({ session }) {
 
   function handleInterpret() {
     if (!dreamText.trim()) return;
-    const found = matchSymbols(dreamText);
+    const found = matchSymbols(dreamText, symbolsDict);
     setMatches(found);
     setSelectedId(found[0]?.id ?? null);
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
@@ -597,7 +606,7 @@ function DreamOracle({ session }) {
                 <p className="line-clamp-2 mb-3 opacity-85">{e.dream_text}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {(e.symbols ?? []).map((sid) => {
-                    const s = SYMBOLS.find((x) => x.id === sid);
+                    const s = symbolsDict.find((x) => x.id === sid);
                     return s ? <span key={sid} className="tag">{s.label}</span> : null;
                   })}
                 </div>
