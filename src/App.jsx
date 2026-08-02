@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Moon, Sparkles, BookOpen, X, LogOut, Image as ImageIcon } from "lucide-react";
-import { supabase } from "./supabaseClient";
+import { supabase, supabaseUrl, supabaseAnonKey } from "./supabaseClient";
 
 // ---------------------------------------------------------------------------
 // Dicionário local de símbolos. Isto é um espelho da tabela `symbols` no
@@ -855,14 +855,62 @@ function DreamOracle({ session, categories }) {
     setGeneratingImage(true);
     setImageError(null);
     setGeneratedImage(null);
+
+    // O relato do sonho (exatamente como a pessoa escreveu) é a base do prompt.
+    // Os símbolos reconhecidos entram só como reforço, quando existem.
     const symbolLabels = (matches ?? []).map((m) => m.label).join(", ");
-    const prompt = `Uma ilustração onírica e surrealista representando este sonho: "${dreamText}".${symbolLabels ? ` Elementos simbólicos presentes: ${symbolLabels}.` : ""} Estilo pintura surrealista, cores suaves e atmosféricas, sem texto na imagem.`;
-    const { data, error } = await supabase.functions.invoke("generate-dream-image", {
-      body: { apiKey, prompt },
-    });
-    if (error) setImageError(error.message);
-    else if (data?.error) setImageError(data.error);
-    else setGeneratedImage(data.image_base64);
+    const prompt = `Uma ilustração onírica e surrealista representando este sonho, com base neste relato: "${dreamText}".${symbolLabels ? ` Elementos simbólicos presentes: ${symbolLabels}.` : ""} Estilo pintura surrealista, cores suaves e atmosféricas, sem texto na imagem.`;
+
+    try {
+      const res = await fetch(`${supabaseUrl}/functions/v1/generate-dream-image`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: supabaseAnonKey,
+        },
+        body: JSON.stringify({ apiKey, prompt }),
+      });
+
+      // Erro (chave inválida, sem crédito, etc.) chega como JSON normal, não como stream.
+      if (!res.ok || !res.body) {
+        const errBody = await res.json().catch(() => null);
+        setImageError(errBody?.error ?? "Não foi possível gerar a imagem.");
+        setGeneratingImage(false);
+        return;
+      }
+
+      // Deu certo: lê o stream de eventos (SSE) e vai atualizando a imagem
+      // a cada "prévia" recebida, até a versão final chegar.
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const events = buffer.split("\n\n");
+        buffer = events.pop(); // pedaço incompleto, guarda pra próxima leitura
+
+        for (const rawEvent of events) {
+          const line = rawEvent.split("\n").find((l) => l.startsWith("data:"));
+          if (!line) continue;
+          const jsonStr = line.slice(5).trim();
+          if (!jsonStr || jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.b64_json) setGeneratedImage(parsed.b64_json);
+            if (parsed.error) setImageError(parsed.error.message ?? "Erro ao gerar imagem.");
+          } catch {
+            // ignora fragmentos que não formam um JSON válido ainda
+          }
+        }
+      }
+    } catch (e) {
+      setImageError(String(e));
+    }
     setGeneratingImage(false);
   }
 
