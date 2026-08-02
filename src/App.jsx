@@ -364,7 +364,7 @@ function ImagePanel({ generatingImage, generatedImage, imageError, onGenerate })
     <div className="image-panel">
       {!generatedImage && (
         <button className="btn-ghost flex items-center gap-2" onClick={onGenerate} disabled={generatingImage}>
-          <ImageIcon size={14} /> {generatingImage ? "Gerando imagem..." : "Gerar imagem do sonho"}
+          <ImageIcon size={14} /> {generatingImage ? "Gerando imagem..." : "Criar imagem deste sonho com IA"}
         </button>
       )}
       {generatedImage && (
@@ -627,6 +627,31 @@ function OracleStyles() {
         z-index: 50;
         padding: 24px;
       }
+      .modal-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--amber), var(--rose));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #241704;
+        margin-bottom: 14px;
+      }
+      .modal-title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 22px;
+        line-height: 1.2;
+      }
+      .modal-steps {
+        list-style: decimal;
+        padding-left: 20px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--lavender);
+      }
+      .modal-steps a { color: var(--amber); text-decoration: underline; }
       .generated-image {
         width: 100%;
         border-radius: 8px;
@@ -838,8 +863,8 @@ function DreamOracle({ session, categories }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => { setKeyInput(apiKey); setShowKeyModal(true); }} className="btn-ghost text-xs py-1.5 px-3">
-              {apiKey ? "Chave OpenAI ✓" : "Configurar chave OpenAI"}
+            <button onClick={() => { setKeyInput(apiKey); setShowKeyModal(true); }} className="btn-ghost flex items-center gap-2 text-xs py-1.5 px-3">
+              <ImageIcon size={13} /> {apiKey ? "Chave OpenAI ✓" : "Criar imagem do sonho com IA"}
             </button>
             {session.user.email === ADMIN_EMAIL && (
               <a href="?admin=1" className="btn-ghost text-xs py-1.5 px-3">Admin</a>
@@ -956,11 +981,24 @@ function DreamOracle({ session, categories }) {
       {showKeyModal && (
         <div className="modal-overlay" onClick={() => setShowKeyModal(false)}>
           <div className="journal-page max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="oracle-eyebrow mb-3">chave de api da openai</div>
-            <p className="text-sm opacity-80 mb-4">
-              Cole aqui a chave da sua própria conta na OpenAI. As imagens são geradas usando
-              seu crédito — nada é cobrado do dono do site.
+            <div className="modal-badge"><ImageIcon size={20} /></div>
+            <h3 className="modal-title">Crie a imagem do seu sonho com IA</h3>
+            <p className="text-sm opacity-80 mb-4 mt-2">
+              Depois de interpretar um sonho, gere uma ilustração dele na hora — feita a partir
+              do texto e dos símbolos reconhecidos. Só precisa de uma chave de API da OpenAI,
+              sua e só sua: a imagem é gerada com o seu crédito, nada passa pela conta do site.
             </p>
+            <ol className="modal-steps mb-4">
+              <li>
+                Crie uma conta em{" "}
+                <a href="https://platform.openai.com" target="_blank" rel="noopener noreferrer">platform.openai.com</a>
+              </li>
+              <li>
+                Gere uma chave em{" "}
+                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com/api-keys</a>
+              </li>
+              <li>Cole a chave (começa com "sk-") aqui embaixo</li>
+            </ol>
             <form onSubmit={handleSaveApiKey} className="space-y-3">
               <input
                 type="password"
