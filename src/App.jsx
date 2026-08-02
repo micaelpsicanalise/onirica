@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Moon, Sparkles, BookOpen, X, LogOut } from "lucide-react";
+import { Moon, Sparkles, BookOpen, X, LogOut, Image as ImageIcon } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
 // ---------------------------------------------------------------------------
@@ -356,6 +356,31 @@ function Constellation({ matches, onSelect, selectedId, categories }) {
 }
 
 // ---------------------------------------------------------------------------
+// Painel de geração de imagem — usa a chave OpenAI do próprio cliente
+// (guardada em user_settings), via a Edge Function generate-dream-image.
+// ---------------------------------------------------------------------------
+function ImagePanel({ generatingImage, generatedImage, imageError, onGenerate }) {
+  return (
+    <div className="image-panel">
+      {!generatedImage && (
+        <button className="btn-ghost flex items-center gap-2" onClick={onGenerate} disabled={generatingImage}>
+          <ImageIcon size={14} /> {generatingImage ? "Gerando imagem..." : "Gerar imagem do sonho"}
+        </button>
+      )}
+      {generatedImage && (
+        <div className="space-y-2">
+          <img src={`data:image/png;base64,${generatedImage}`} alt="Ilustração gerada do sonho" className="generated-image" />
+          <button className="btn-ghost text-xs py-1.5 px-3" onClick={onGenerate} disabled={generatingImage}>
+            {generatingImage ? "Gerando..." : "Gerar outra"}
+          </button>
+        </div>
+      )}
+      {imageError && <p className="text-xs text-red-300 mt-2">{imageError}</p>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Landing / login — apresenta o site antes de pedir pra entrar. A prévia de
 // símbolos usa uma amostra fixa (não é interativa) só para dar gosto do que
 // vem depois do login.
@@ -591,6 +616,23 @@ function OracleStyles() {
         padding: 22px 24px;
         border: 1px solid rgba(201,195,224,0.12);
       }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(11,15,31,0.75);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 24px;
+      }
+      .generated-image {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+      .image-panel { display: flex; flex-direction: column; align-items: flex-start; }
       .category-row {
         background: var(--panel-2);
         border-radius: 8px;
@@ -663,12 +705,57 @@ function DreamOracle({ session, categories }) {
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [symbolsDict, setSymbolsDict] = useState(SYMBOLS); // começa com o fallback local
+  const [apiKey, setApiKey] = useState("");
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [imageError, setImageError] = useState(null);
   const resultRef = useRef(null);
 
   useEffect(() => {
     loadEntries();
     loadSymbolsDict();
+    loadApiKey();
   }, []);
+
+  async function loadApiKey() {
+    const { data } = await supabase.from("user_settings").select("openai_api_key").eq("user_id", session.user.id).maybeSingle();
+    if (data?.openai_api_key) setApiKey(data.openai_api_key);
+  }
+
+  async function handleSaveApiKey(e) {
+    e.preventDefault();
+    const { error } = await supabase
+      .from("user_settings")
+      .upsert({ user_id: session.user.id, openai_api_key: keyInput.trim() });
+    if (!error) {
+      setApiKey(keyInput.trim());
+      setShowKeyModal(false);
+      setKeyInput("");
+    } else {
+      setImageError(error.message);
+    }
+  }
+
+  async function handleGenerateImage() {
+    if (!apiKey) {
+      setShowKeyModal(true);
+      return;
+    }
+    setGeneratingImage(true);
+    setImageError(null);
+    setGeneratedImage(null);
+    const symbolLabels = (matches ?? []).map((m) => m.label).join(", ");
+    const prompt = `Uma ilustração onírica e surrealista representando este sonho: "${dreamText}".${symbolLabels ? ` Elementos simbólicos presentes: ${symbolLabels}.` : ""} Estilo pintura surrealista, cores suaves e atmosféricas, sem texto na imagem.`;
+    const { data, error } = await supabase.functions.invoke("generate-dream-image", {
+      body: { apiKey, prompt },
+    });
+    if (error) setImageError(error.message);
+    else if (data?.error) setImageError(data.error);
+    else setGeneratedImage(data.image_base64);
+    setGeneratingImage(false);
+  }
 
   async function loadSymbolsDict() {
     const { data, error } = await supabase.from("symbols").select("*");
@@ -694,6 +781,8 @@ function DreamOracle({ session, categories }) {
     const found = matchSymbols(dreamText, symbolsDict);
     setMatches(found);
     setSelectedId(found[0]?.id ?? null);
+    setGeneratedImage(null);
+    setImageError(null);
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
 
@@ -724,6 +813,8 @@ function DreamOracle({ session, categories }) {
     setDreamText("");
     setMatches(null);
     setSelectedId(null);
+    setGeneratedImage(null);
+    setImageError(null);
   }
 
   const selected = matches?.find((m) => m.id === selectedId) ?? null;
@@ -747,6 +838,9 @@ function DreamOracle({ session, categories }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => { setKeyInput(apiKey); setShowKeyModal(true); }} className="btn-ghost text-xs py-1.5 px-3">
+              {apiKey ? "Chave OpenAI ✓" : "Configurar chave OpenAI"}
+            </button>
             {session.user.email === ADMIN_EMAIL && (
               <a href="?admin=1" className="btn-ghost text-xs py-1.5 px-3">Admin</a>
             )}
@@ -790,6 +884,12 @@ function DreamOracle({ session, categories }) {
                   <h3>Esse sonho é só seu, por enquanto</h3>
                   <p>Não encontrei nenhuma palavra do nosso dicionário nesse texto. Ainda assim, você pode guardar o sonho no seu histórico — o dicionário só ajuda com a interpretação, ele não decide o que vale a pena lembrar.</p>
                 </div>
+                <ImagePanel
+                  generatingImage={generatingImage}
+                  generatedImage={generatedImage}
+                  imageError={imageError}
+                  onGenerate={handleGenerateImage}
+                />
                 <div className="flex justify-end">
                   <button className="btn-primary" onClick={handleSave} disabled={saving}>
                     <BookOpen size={15} /> {saving ? "Salvando..." : "Salvar no meu histórico"}
@@ -807,6 +907,12 @@ function DreamOracle({ session, categories }) {
                     <p>{selected.meaning}</p>
                   </div>
                 )}
+                <ImagePanel
+                  generatingImage={generatingImage}
+                  generatedImage={generatedImage}
+                  imageError={imageError}
+                  onGenerate={handleGenerateImage}
+                />
                 <div className="flex justify-end">
                   <button className="btn-primary" onClick={handleSave} disabled={saving}>
                     <BookOpen size={15} /> {saving ? "Salvando..." : "Salvar no meu histórico"}
@@ -846,6 +952,33 @@ function DreamOracle({ session, categories }) {
 
         {errorMsg && <p className="text-xs text-red-300 mt-8">{errorMsg}</p>}
       </div>
+
+      {showKeyModal && (
+        <div className="modal-overlay" onClick={() => setShowKeyModal(false)}>
+          <div className="journal-page max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="oracle-eyebrow mb-3">chave de api da openai</div>
+            <p className="text-sm opacity-80 mb-4">
+              Cole aqui a chave da sua própria conta na OpenAI. As imagens são geradas usando
+              seu crédito — nada é cobrado do dono do site.
+            </p>
+            <form onSubmit={handleSaveApiKey} className="space-y-3">
+              <input
+                type="password"
+                required
+                placeholder="sk-..."
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                className="oracle-input w-full rounded-md px-3 py-2.5 text-sm"
+                style={{ fontFamily: "'IBM Plex Mono', monospace", fontStyle: "normal" }}
+              />
+              <div className="flex gap-2 justify-end">
+                <button type="button" className="btn-ghost text-xs py-1.5 px-3" onClick={() => setShowKeyModal(false)}>Cancelar</button>
+                <button type="submit" className="btn-primary text-xs py-1.5 px-3">Salvar chave</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
