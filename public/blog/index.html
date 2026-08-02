@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog Onírica — a linguagem dos seus sonhos</title>
+<meta name="description" content="Textos sobre símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos — para entender melhor o que sua mente diz enquanto você dorme.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============ TOKENS (mesmos do app principal) ============ */
+:root{
+  --ink:#0b0f1f;
+  --panel:#141a33;
+  --panel-2:#1b2244;
+  --moon:#f4f1ea;
+  --lavender:#c9c3e0;
+  --amber:#e8a857;
+  --rose:#c97b93;
+  --teal:#6fa8a0;
+  --line: rgba(201,195,224,0.18);
+  --radius:8px;
+  --font-display:'Fraunces', serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:
+    radial-gradient(circle at 15% 10%, rgba(201,195,224,0.06), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(232,168,87,0.05), transparent 45%),
+    var(--ink);
+  color:var(--moon);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.6;
+  min-height:100vh;
+}
+a{color:inherit; text-decoration:none;}
+img{max-width:100%; display:block;}
+.hidden{display:none !important;}
+::selection{background:var(--amber); color:var(--ink);}
+
+.eyebrow{
+  font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.14em;
+  font-size:11px; color:var(--lavender); opacity:.75; font-weight:500;
+}
+
+/* ============ TOP NAV ============ */
+.topnav{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 5vw;
+  background:rgba(11,15,31,0.82);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex; align-items:center; gap:10px; cursor:pointer;}
+.brand-text{font-family:var(--font-display); font-weight:600; font-size:19px; color:var(--moon);}
+.brand-text em{color:var(--amber); font-style:italic; font-weight:500;}
+.nav-links{display:flex; gap:28px; align-items:center; font-family:var(--font-mono); font-size:12.5px; letter-spacing:.04em; text-transform:uppercase;}
+.nav-links a{color:var(--lavender); transition:color .2s;}
+.nav-links a:hover{color:var(--amber);}
+.btn-primary{
+  font-family:var(--font-mono); font-size:12.5px; letter-spacing:.04em; text-transform:uppercase;
+  color:#241704; background:var(--amber);
+  border:none; padding:10px 18px; cursor:pointer; border-radius:999px;
+  transition:transform .15s, box-shadow .15s; font-weight:600;
+}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(232,168,87,0.25);}
+.btn-ghost{
+  font-family:var(--font-mono); font-size:12.5px; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--lavender); background:transparent; border:1px solid rgba(201,195,224,0.3);
+  padding:9px 16px; cursor:pointer; border-radius:999px; transition:.2s;
+}
+.btn-ghost:hover{border-color:var(--lavender); color:var(--moon);}
+.btn-danger{color:#e08a9a; border-color:rgba(122,31,61,0.5);}
+
+/* ============ HERO ============ */
+.hero{padding:11vh 5vw 8vh; text-align:center;}
+.hero h1{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(38px, 6vw, 68px);
+  color:var(--moon); line-height:1.05;
+}
+.hero h1 em{color:var(--amber); font-style:italic; font-weight:500;}
+.hero-sub{
+  font-family:var(--font-body); font-size:17px; color:var(--lavender);
+  margin-top:18px; max-width:560px; margin-left:auto; margin-right:auto; line-height:1.7;
+}
+
+/* ============ SECTION SHELL ============ */
+.section{padding:7vh 5vw;}
+.section-head{text-align:center; margin-bottom:44px;}
+.section-head h2{font-family:var(--font-display); font-size:clamp(24px,3.4vw,36px); color:var(--moon); margin-top:10px; font-weight:600;}
+.section-head p{color:var(--lavender); font-size:15px; margin-top:10px; max-width:480px; margin-left:auto; margin-right:auto;}
+
+/* ============ CATEGORIAS GRID ============ */
+.cat-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:18px; max-width:1100px; margin:0 auto;}
+.cat-card{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
+  padding:26px 22px; cursor:pointer; transition:transform .2s, border-color .2s;
+}
+.cat-card:hover{transform:translateY(-4px); border-color:var(--amber);}
+.cat-nome{font-family:var(--font-display); font-size:21px; color:var(--moon); font-weight:600;}
+.cat-desc{font-family:var(--font-body); color:var(--lavender); font-size:14px; margin-top:8px; line-height:1.6;}
+.cat-count{font-family:var(--font-mono); font-size:11px; color:var(--amber); margin-top:14px; text-transform:uppercase; letter-spacing:.06em;}
+
+/* ============ POSTS ============ */
+.posts-list{max-width:760px; margin:0 auto; display:flex; flex-direction:column;}
+.post-row{
+  display:grid; grid-template-columns:1fr; gap:8px;
+  padding:26px 0; border-bottom:1px solid var(--line); cursor:pointer;
+}
+.post-row:hover .post-title{color:var(--amber);}
+.post-tag{font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber);}
+.post-title{font-family:var(--font-display); font-size:23px; color:var(--moon); font-weight:600; transition:color .2s;}
+.post-excerpt{color:var(--lavender); font-size:15px; line-height:1.65;}
+.post-foot{font-family:var(--font-mono); font-size:11.5px; color:var(--lavender); opacity:.6;}
+.empty-note{text-align:center; color:var(--lavender); opacity:.6; font-size:14px; padding:30px 0;}
+
+/* ============ READER ============ */
+.reader{max-width:680px; margin:0 auto; padding:8vh 5vw 10vh;}
+.reader-back{display:inline-block; margin-bottom:26px; color:var(--amber); font-family:var(--font-mono); font-size:12.5px; letter-spacing:.04em;}
+.reader-tag{font-family:var(--font-mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber);}
+.reader h1{font-family:var(--font-display); font-size:clamp(28px,4.5vw,44px); color:var(--moon); margin-top:14px; line-height:1.15; font-weight:700;}
+.reader-meta{font-family:var(--font-mono); font-size:12px; color:var(--lavender); opacity:.7; margin-top:16px;}
+.reader-body{margin-top:36px; font-size:18px; line-height:1.85; color:var(--moon);}
+.reader-body p{margin-bottom:22px;}
+.reader-tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:36px;}
+.reader-tags span{font-family:var(--font-mono); font-size:11px; padding:4px 10px; border-radius:999px; border:1px solid var(--line); color:var(--lavender);}
+
+/* ============ ABOUT ============ */
+.about{max-width:640px; margin:0 auto; text-align:center;}
+.about h3{font-family:var(--font-display); font-size:26px; color:var(--moon); margin-bottom:14px; font-weight:600;}
+.about p{color:var(--lavender); font-size:16px; line-height:1.8; margin-bottom:14px;}
+
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--line); padding:40px 5vw; text-align:center;}
+.footer-links{display:flex; gap:22px; justify-content:center; margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--lavender); flex-wrap:wrap;}
+.footer-note{margin-top:20px; font-family:var(--font-mono); font-size:11px; color:var(--lavender); opacity:.4;}
+
+/* =====================================================================
+   ADMIN
+===================================================================== */
+.dash{display:none; min-height:100vh; grid-template-columns:230px 1fr; font-family:var(--font-body);}
+.dash.active{display:grid;}
+.dash-sidebar{background:var(--panel); border-right:1px solid var(--line); padding:22px 0; position:sticky; top:0; height:100vh; overflow-y:auto;}
+.dash-brand{padding:0 22px 20px; border-bottom:1px solid var(--line); margin-bottom:14px; font-family:var(--font-display); font-size:16px; color:var(--moon); cursor:pointer;}
+.dash-nav{display:flex; flex-direction:column; gap:2px; padding:0 10px;}
+.dash-nav-label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--lavender); opacity:.5; padding:14px 12px 6px;}
+.dash-nav button{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  background:none; border:none; color:var(--lavender); font-family:var(--font-body); font-size:14px;
+  padding:10px 12px; border-radius:6px; cursor:pointer; transition:.15s;
+}
+.dash-nav button:hover{background:var(--panel-2); color:var(--moon);}
+.dash-nav button.active{background:var(--panel-2); color:var(--amber);}
+.dash-exit{margin:16px 10px 0; padding-top:14px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:8px;}
+
+.dash-main{padding:32px 40px; overflow-y:auto; height:100vh;}
+.dash-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; flex-wrap:wrap; gap:12px;}
+.dash-topbar h1{font-family:var(--font-display); font-size:26px; color:var(--moon); font-weight:600;}
+.dash-topbar .sub{color:var(--lavender); font-size:13.5px; margin-top:4px;}
+
+.dash-section{display:none;}
+.dash-section.active{display:block;}
+
+.panel{background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius); padding:22px; margin-bottom:20px;}
+.panel h3{font-family:var(--font-display); font-size:17px; color:var(--moon); margin-bottom:16px; font-weight:600;}
+.panel-row{display:grid; grid-template-columns:1.6fr 1fr; gap:20px;}
+@media(max-width:900px){.panel-row{grid-template-columns:1fr;}}
+
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--lavender); opacity:.6; padding:9px 10px; border-bottom:1px solid var(--line); font-weight:500;}
+td{padding:12px 10px; border-bottom:1px solid rgba(201,195,224,0.08); color:var(--moon); vertical-align:middle;}
+tr:hover td{background:rgba(201,195,224,0.04);}
+.badge{font-family:var(--font-mono); font-size:10.5px; padding:3px 9px; border-radius:20px; letter-spacing:.04em; text-transform:uppercase;}
+.badge.publicado{background:rgba(111,168,160,0.18); color:var(--teal);}
+.badge.rascunho{background:rgba(232,168,87,0.18); color:var(--amber);}
+.row-actions{display:flex; gap:8px;}
+.row-actions button{background:none; border:1px solid var(--line); color:var(--lavender); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px;}
+.row-actions button:hover{border-color:var(--amber); color:var(--amber);}
+.row-actions button.danger:hover{border-color:#7a1f3d; color:#e08a9a;}
+
+.toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap;}
+input[type=text], input[type=email], input[type=password], select, textarea{
+  background:var(--panel); border:1px solid var(--line); color:var(--moon);
+  padding:10px 13px; border-radius:6px; font-family:var(--font-body); font-size:14px; width:100%;
+}
+textarea{font-family:var(--font-body); font-size:15px; line-height:1.7;}
+.search-input{max-width:260px;}
+label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--lavender); opacity:.7; display:block; margin-bottom:7px;}
+.field{margin-bottom:16px;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.char-count{font-family:var(--font-mono); font-size:10.5px; color:var(--lavender); opacity:.5; margin-top:4px; text-align:right;}
+.char-count.over{color:#e08a9a;}
+
+/* SEO checklist */
+.seo-score{display:flex; align-items:center; gap:16px; margin-bottom:16px;}
+.seo-score-ring{
+  --pct:0; width:64px; height:64px; border-radius:50%; flex-shrink:0;
+  background:conic-gradient(var(--amber) calc(var(--pct)*1%), rgba(201,195,224,0.12) 0);
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--moon);
+  position:relative;
+}
+.seo-score-ring::before{content:""; position:absolute; inset:5px; border-radius:50%; background:var(--panel-2);}
+.seo-score-ring span{position:relative;}
+.seo-check{display:flex; align-items:center; gap:9px; font-size:12.5px; padding:6px 0; color:var(--lavender);}
+.seo-check .dot{width:6px; height:6px; border-radius:50%; flex-shrink:0;}
+.seo-check.ok .dot{background:var(--teal);}
+.seo-check.warn .dot{background:var(--amber);}
+.seo-check.bad .dot{background:#e08a9a;}
+.serp-preview{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:14px; margin-top:6px;}
+.serp-url{font-family:var(--font-body); font-size:12.5px; color:var(--teal);}
+.serp-title{font-family:var(--font-body); font-size:16px; color:#8ab4f8; margin-top:4px;}
+.serp-desc{font-family:var(--font-body); font-size:12.5px; color:var(--lavender); margin-top:4px; line-height:1.5;}
+.tech-preview{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:16px; margin-top:14px; font-family:var(--font-mono); font-size:12px; color:var(--lavender); white-space:pre-wrap; word-break:break-all; display:none;}
+
+.login-gate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+.login-card{background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius); padding:36px; max-width:360px; width:100%; text-align:center;}
+.login-card h3{font-family:var(--font-display); font-size:22px; color:var(--moon); margin-bottom:10px;}
+.login-card p{color:var(--lavender); font-size:14px; margin-bottom:22px; line-height:1.6;}
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--panel-2); border:1px solid var(--amber); color:var(--moon);
+  padding:12px 22px; border-radius:999px; font-size:13.5px; opacity:0; pointer-events:none;
+  transition:opacity .25s, transform .25s; z-index:100; font-family:var(--font-body);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+     SITE PÚBLICO
+===================================================================== -->
+<div id="site-view">
+  <nav class="topnav">
+    <div class="brand" onclick="navSection('inicio')">
+      <span class="brand-text">Onírica <em>blog</em></span>
+    </div>
+    <div class="nav-links">
+      <a href="#" onclick="navSection('inicio');return false;">Início</a>
+      <a href="#" onclick="navSection('categorias');return false;">Categorias</a>
+      <a href="#" onclick="navSection('sobre');return false;">Sobre</a>
+      <a href="../" >App Onírica →</a>
+      <button class="btn-ghost" onclick="enterAdmin()" id="nav-admin-btn">Painel</button>
+    </div>
+  </nav>
+
+  <!-- INÍCIO -->
+  <section id="sec-inicio">
+    <div class="hero">
+      <div class="eyebrow" style="margin-bottom:16px;">blog onírica</div>
+      <h1>A linguagem <em>dos seus sonhos</em></h1>
+      <p class="hero-sub">Símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos — textos pra entender melhor o que sua mente diz enquanto você dorme.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="eyebrow">explore por tema</div>
+        <h2>Categorias</h2>
+      </div>
+      <div class="cat-grid" id="cat-grid-home"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="eyebrow">últimos textos</div>
+        <h2>Posts recentes</h2>
+      </div>
+      <div class="posts-list" id="posts-home"></div>
+    </div>
+  </section>
+
+  <!-- CATEGORIAS -->
+  <section id="sec-categorias" class="hidden">
+    <div class="section">
+      <div class="section-head">
+        <div class="eyebrow">todas os temas</div>
+        <h2>Categorias</h2>
+      </div>
+      <div class="cat-grid" id="cat-grid-full"></div>
+    </div>
+  </section>
+
+  <!-- CATEGORIA INDIVIDUAL -->
+  <section id="sec-categoria" class="hidden">
+    <div class="section" style="max-width:760px; margin:0 auto;">
+      <a href="#" class="reader-back" onclick="navSection('categorias');return false;">← categorias</a>
+      <div class="eyebrow" id="categoria-eyebrow"></div>
+      <h2 style="font-family:var(--font-display); font-size:clamp(26px,4vw,38px); margin-top:8px; font-weight:600;" id="categoria-titulo"></h2>
+      <p style="color:var(--lavender); margin-top:10px;" id="categoria-desc"></p>
+      <div class="posts-list" style="margin-top:34px;" id="posts-categoria"></div>
+    </div>
+  </section>
+
+  <!-- LEITURA DE POST -->
+  <section id="sec-post" class="hidden">
+    <div class="reader">
+      <a href="#" class="reader-back" onclick="navSection('inicio');return false;">← todos os posts</a>
+      <div class="reader-tag" id="post-tag"></div>
+      <h1 id="post-titulo"></h1>
+      <div class="reader-meta" id="post-meta"></div>
+      <div class="reader-body" id="post-corpo"></div>
+      <div class="reader-tags" id="post-tags"></div>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section id="sec-sobre" class="hidden">
+    <div class="section">
+      <div class="about">
+        <div class="eyebrow" style="margin-bottom:14px;">sobre o blog</div>
+        <h3>Um espaço pra entender o que os sonhos dizem</h3>
+        <p>Este blog é a extensão do <a href="../" style="color:var(--amber); text-decoration:underline;">Onírica</a>, o app que interpreta sonhos a partir de um dicionário de símbolos.</p>
+        <p>Aqui, os textos vão mais fundo: a psicologia por trás dos sonhos, o que a ciência já entendeu (e o que ainda não), como lidar com pesadelos recorrentes, e como técnicas de sonho lúcido funcionam na prática.</p>
+        <p>Não é um consultório nem substitui acompanhamento profissional — é um lugar pra se interessar mais pelo que acontece na sua cabeça enquanto ela dorme.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="brand-text">Onírica <em>blog</em></div>
+    <div class="footer-links">
+      <a href="#" onclick="navSection('inicio');return false;">Início</a>
+      <a href="#" onclick="navSection('categorias');return false;">Categorias</a>
+      <a href="#" onclick="navSection('sobre');return false;">Sobre</a>
+      <a href="../">App Onírica</a>
+    </div>
+    <div class="footer-note">© Onírica — blog</div>
+  </footer>
+</div>
+
+<!-- =====================================================================
+     TELA DE ACESSO NEGADO / LOGIN DO PAINEL
+===================================================================== -->
+<div class="login-gate hidden" id="login-gate">
+  <div class="login-card">
+    <h3 id="login-gate-title">Painel restrito</h3>
+    <p id="login-gate-text">Entre com a mesma conta Google usada como administradora do Onírica.</p>
+    <button class="btn-primary" style="width:100%;" onclick="loginGoogle()" id="login-gate-btn">Entrar com Google</button>
+    <button class="btn-ghost" style="width:100%; margin-top:10px;" onclick="exitAdmin()">Voltar ao blog</button>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PAINEL ADMINISTRATIVO
+===================================================================== -->
+<div class="dash" id="dashboard-view">
+  <aside class="dash-sidebar">
+    <div class="dash-brand" onclick="exitAdmin()">Painel do Blog</div>
+    <nav class="dash-nav">
+      <div class="dash-nav-label">Conteúdo</div>
+      <button data-target="d-posts" class="active" onclick="dashNav(this)">Posts</button>
+      <button data-target="d-editor" onclick="dashNav(this)">Novo Post</button>
+      <button data-target="d-categorias" onclick="dashNav(this)">Categorias</button>
+      <div class="dash-nav-label">Otimização</div>
+      <button data-target="d-seo" onclick="dashNav(this)">SEO do site</button>
+    </nav>
+    <div class="dash-exit">
+      <button class="btn-ghost" onclick="exitAdmin()">← Voltar ao blog</button>
+      <button class="btn-ghost btn-danger" onclick="logoutAdmin()">Sair da conta</button>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <!-- POSTS -->
+    <section class="dash-section active" id="d-posts">
+      <div class="dash-topbar">
+        <div><h1>Posts</h1><div class="sub">Todos os textos, publicados e em rascunho.</div></div>
+        <button class="btn-primary" onclick="dashNavByTarget('d-editor')">+ Novo Post</button>
+      </div>
+      <div class="toolbar">
+        <input class="search-input" id="posts-search" placeholder="Buscar por título..." oninput="renderPostsTable()">
+        <select id="posts-filter-cat" onchange="renderPostsTable()" style="max-width:220px;"></select>
+      </div>
+      <div class="panel" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead><tr><th>Título</th><th>Categoria</th><th>Status</th><th>Palavras</th><th>SEO</th><th>Visualizações</th><th>Ações</th></tr></thead>
+          <tbody id="posts-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EDITOR -->
+    <section class="dash-section" id="d-editor">
+      <div class="dash-topbar"><div><h1 id="editor-title">Novo Post</h1><div class="sub">Escreva o texto e otimize com o painel de SEO ao lado.</div></div></div>
+      <div class="panel-row">
+        <div>
+          <div class="panel">
+            <div class="field">
+              <label>Título</label>
+              <input type="text" id="f-titulo" placeholder="Ex: O que significa sonhar que está caindo" oninput="onEditorInput()">
+            </div>
+            <div class="field">
+              <label>Categoria</label>
+              <select id="f-categoria" onchange="onEditorInput()"></select>
+            </div>
+            <div class="field">
+              <label>Status</label>
+              <select id="f-status">
+                <option value="rascunho">Rascunho</option>
+                <option value="publicado">Publicado</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Resumo / Excerto</label>
+              <textarea id="f-resumo" rows="2" placeholder="Uma frase que resuma o texto..." oninput="onEditorInput()"></textarea>
+            </div>
+            <div class="field">
+              <label>Conteúdo</label>
+              <textarea id="f-conteudo" rows="14" placeholder="Escreva o texto completo aqui. Separe parágrafos com uma linha em branco." oninput="onEditorInput()"></textarea>
+            </div>
+            <div class="field">
+              <label>Tags (separadas por vírgula)</label>
+              <input type="text" id="f-tags" placeholder="pesadelos, ansiedade, controle" oninput="onEditorInput()">
+            </div>
+            <div style="display:flex; gap:12px;">
+              <button class="btn-primary" onclick="salvarPost()">Salvar Post</button>
+              <button class="btn-ghost" onclick="limparEditor()">Limpar</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <h3>Painel de SEO</h3>
+            <div class="seo-score">
+              <div class="seo-score-ring" id="seo-ring" style="--pct:0;"><span id="seo-score-num">0</span></div>
+              <div style="font-size:12.5px; color:var(--lavender);">Pontuação de otimização<br><span style="color:var(--moon);">com base no conteúdo atual</span></div>
+            </div>
+            <div id="seo-checklist"></div>
+          </div>
+          <div class="panel">
+            <h3>Palavra-chave principal</h3>
+            <div class="field">
+              <input type="text" id="f-keyword" placeholder="Ex: pesadelo" oninput="onEditorInput()">
+            </div>
+            <div id="keyword-density" style="font-size:12.5px; color:var(--lavender);"></div>
+          </div>
+          <div class="panel">
+            <h3>Meta título &amp; descrição</h3>
+            <div class="field">
+              <label>Meta título</label>
+              <input type="text" id="f-meta-titulo" placeholder="Título para o Google" oninput="onEditorInput()">
+              <div class="char-count" id="meta-titulo-count">0 / 60</div>
+            </div>
+            <div class="field">
+              <label>Meta descrição</label>
+              <textarea id="f-meta-desc" rows="3" placeholder="Descrição para o Google" oninput="onEditorInput()"></textarea>
+              <div class="char-count" id="meta-desc-count">0 / 160</div>
+            </div>
+            <div class="field">
+              <label>Slug (URL)</label>
+              <input type="text" id="f-slug" placeholder="o-que-significa-sonhar-que-esta-caindo">
+            </div>
+            <label>Prévia no Google</label>
+            <div class="serp-preview">
+              <div class="serp-url" id="serp-url">.../blog/?post=<span id="serp-slug">seu-slug</span></div>
+              <div class="serp-title" id="serp-title">Título do post aparecerá aqui</div>
+              <div class="serp-desc" id="serp-desc">A meta descrição aparecerá aqui, mostrando como seu texto será visto no Google.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section class="dash-section" id="d-categorias">
+      <div class="dash-topbar">
+        <div><h1>Categorias</h1><div class="sub">Temas usados para organizar e filtrar os posts.</div></div>
+        <button class="btn-primary" onclick="novaCategoriaForm()">+ Nova Categoria</button>
+      </div>
+      <div class="panel hidden" id="categoria-form-panel">
+        <h3 id="categoria-form-title">Nova Categoria</h3>
+        <div class="field"><label>Nome</label><input type="text" id="cf-nome" placeholder="Ex: Sonhos Lúcidos" oninput="onCategoriaNomeInput()"></div>
+        <div class="field"><label>Slug</label><input type="text" id="cf-slug" placeholder="sonhos-lucidos"></div>
+        <div class="field"><label>Descrição</label><textarea id="cf-descricao" rows="2" placeholder="Uma frase que resuma o tema..."></textarea></div>
+        <div style="display:flex; gap:12px;">
+          <button class="btn-primary" onclick="salvarCategoria()">Salvar Categoria</button>
+          <button class="btn-ghost" onclick="fecharCategoriaForm()">Cancelar</button>
+        </div>
+      </div>
+      <div class="panel" style="padding:0; overflow-x:auto;">
+        <table>
+          <thead><tr><th>Nome</th><th>Slug</th><th>Descrição</th><th>Posts</th><th>Ações</th></tr></thead>
+          <tbody id="categorias-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEO DO SITE -->
+    <section class="dash-section" id="d-seo">
+      <div class="dash-topbar"><div><h1>SEO do site</h1><div class="sub">Arquivos técnicos que ajudam buscadores a indexar o blog.</div></div></div>
+      <div class="panel">
+        <h3>sitemap.xml</h3>
+        <p style="color:var(--lavender); font-size:13.5px;">Lista todas as URLs públicas (posts publicados e categorias) para os buscadores. Copie e salve como <code>sitemap.xml</code> na raiz do site.</p>
+        <button class="btn-ghost" style="margin-top:12px;" onclick="showSitemap()">Gerar prévia</button>
+        <div class="tech-preview" id="sitemap-preview"></div>
+      </div>
+      <div class="panel">
+        <h3>robots.txt</h3>
+        <p style="color:var(--lavender); font-size:13.5px;">Informa aos robôs de busca onde está o sitemap e o que pode ser indexado.</p>
+        <button class="btn-ghost" style="margin-top:12px;" onclick="showRobots()">Gerar prévia</button>
+        <div class="tech-preview" id="robots-preview"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO — mesma conta Supabase e mesmo e-mail admin do app Onírica
+===================================================================== */
+const SUPABASE_URL = "https://hbrlojiuepvppatkeqlu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_LdaQ2ZBeXbDMDcbvheBCHg_c5JVPKZJ"; // a mesma chave usada no app principal
+const ADMIN_EMAIL = "micaelpsicanalise@gmail.com";
+const SITE_BASE = "https://micaelpsicanalise.github.io/onirica/blog/";
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let categorias = [];
+let posts = []; // no site público: só publicados. no painel: todos (admin logado)
+let editingId = null;
+let session = null;
+
+/* =====================================================================
+   CARREGAMENTO DE DADOS
+===================================================================== */
+async function loadCategorias(){
+  const { data, error } = await db.from('blog_categories').select('*').order('nome');
+  if(!error) categorias = data || [];
+}
+async function loadPostsPublico(){
+  const { data, error } = await db.from('blog_posts').select('*').eq('status','publicado').order('data', { ascending:false });
+  if(!error) posts = data || [];
+}
+async function loadPostsAdmin(){
+  const { data, error } = await db.from('blog_posts').select('*').order('data', { ascending:false });
+  if(!error) posts = data || [];
+}
+function categoriaById(id){ return categorias.find(c=>c.id===id) || { nome:'Sem categoria', slug:'' }; }
+function categoriaBySlug(slug){ return categorias.find(c=>c.slug===slug); }
+function postBySlug(slug){ return posts.find(p=>p.slug===slug); }
+
+/* =====================================================================
+   RENDER — SITE PÚBLICO
+===================================================================== */
+function renderCatCards(targetId){
+  const el = document.getElementById(targetId);
+  el.innerHTML = categorias.map(c=>{
+    const n = posts.filter(p=>p.categoria_id===c.id).length;
+    return `<div class="cat-card" onclick="abrirCategoria('${c.slug}')">
+      <div class="cat-nome">${c.nome}</div>
+      <div class="cat-desc">${c.descricao||''}</div>
+      <div class="cat-count">${n} ${n===1?'texto':'textos'}</div>
+    </div>`;
+  }).join('') || `<p class="empty-note">Nenhuma categoria ainda.</p>`;
+}
+function renderPostsHome(){
+  const el = document.getElementById('posts-home');
+  const list = posts.slice(0,8);
+  el.innerHTML = list.map(p=>`
+    <div class="post-row" onclick="abrirPost('${p.slug}')">
+      <div class="post-tag">${categoriaById(p.categoria_id).nome}</div>
+      <div class="post-title">${p.titulo}</div>
+      <div class="post-excerpt">${p.resumo||''}</div>
+      <div class="post-foot">${formatDate(p.data)}</div>
+    </div>
+  `).join('') || `<p class="empty-note">Nenhum post publicado ainda.</p>`;
+}
+function renderPostsCategoria(cat){
+  const el = document.getElementById('posts-categoria');
+  const list = posts.filter(p=>p.categoria_id===cat.id);
+  el.innerHTML = list.map(p=>`
+    <div class="post-row" onclick="abrirPost('${p.slug}')">
+      <div class="post-title">${p.titulo}</div>
+      <div class="post-excerpt">${p.resumo||''}</div>
+      <div class="post-foot">${formatDate(p.data)}</div>
+    </div>
+  `).join('') || `<p class="empty-note">Nenhum post nessa categoria ainda.</p>`;
+}
+function renderPost(p){
+  document.getElementById('post-tag').textContent = categoriaById(p.categoria_id).nome;
+  document.title = (p.meta_titulo || p.titulo) + ' — Blog Onírica';
+  document.getElementById('post-titulo').textContent = p.titulo;
+  document.getElementById('post-meta').textContent = formatDate(p.data) + ' · ' + wordCount(p.conteudo) + ' palavras';
+  document.getElementById('post-corpo').innerHTML = (p.conteudo||'').split(/\n\s*\n/).map(par=>`<p>${par.replace(/\n/g,'<br>')}</p>`).join('');
+  document.getElementById('post-tags').innerHTML = (p.tags||[]).map(t=>`<span>${t}</span>`).join('');
+}
+function formatDate(d){
+  if(!d) return '';
+  return new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+}
+function wordCount(txt){ return (txt||'').trim().split(/\s+/).filter(Boolean).length; }
+
+/* =====================================================================
+   NAVEGAÇÃO (rotas por query string — funciona em qualquer host estático)
+===================================================================== */
+function navSection(name, extra){
+  ['inicio','categorias','categoria','post','sobre'].forEach(s=>{
+    document.getElementById('sec-'+s).classList.toggle('hidden', s!==name);
+  });
+  const params = new URLSearchParams();
+  if(name==='categoria' && extra) params.set('categoria', extra);
+  if(name==='post' && extra) params.set('post', extra);
+  const qs = params.toString();
+  history.replaceState({}, '', location.pathname + (qs?'?'+qs:''));
+  window.scrollTo(0,0);
+}
+function abrirCategoria(slug){
+  const cat = categoriaBySlug(slug);
+  if(!cat) return;
+  document.getElementById('categoria-eyebrow').textContent = 'categoria';
+  document.getElementById('categoria-titulo').textContent = cat.nome;
+  document.getElementById('categoria-desc').textContent = cat.descricao || '';
+  renderPostsCategoria(cat);
+  navSection('categoria', slug);
+}
+async function abrirPost(slug){
+  const p = postBySlug(slug);
+  if(!p) return;
+  renderPost(p);
+  navSection('post', slug);
+  db.rpc('increment_post_views', { post_slug: slug }).then(()=>{});
+}
+function applyRouteFromQuery(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('post')){
+    const p = postBySlug(params.get('post'));
+    if(p){ renderPost(p); navSection('post', params.get('post')); return; }
+  }
+  if(params.get('categoria')){
+    const cat = categoriaBySlug(params.get('categoria'));
+    if(cat){
+      document.getElementById('categoria-eyebrow').textContent = 'categoria';
+      document.getElementById('categoria-titulo').textContent = cat.nome;
+      document.getElementById('categoria-desc').textContent = cat.descricao || '';
+      renderPostsCategoria(cat);
+      navSection('categoria', params.get('categoria'));
+      return;
+    }
+  }
+  navSection('inicio');
+}
+
+/* =====================================================================
+   AUTENTICAÇÃO / PAINEL
+===================================================================== */
+async function loginGoogle(){
+  await db.auth.signInWithOAuth({
+    provider:'google',
+    options:{ redirectTo: SITE_BASE + '?admin=1', queryParams:{ prompt:'select_account' } }
+  });
+}
+async function logoutAdmin(){
+  await db.auth.signOut();
+  exitAdmin();
+}
+async function enterAdmin(){
+  const { data } = await db.auth.getSession();
+  session = data.session;
+  if(!session){
+    showLoginGate('Painel restrito', 'Entre com a mesma conta Google usada como administradora do Onírica.', true);
+    return;
+  }
+  if(session.user.email !== ADMIN_EMAIL){
+    showLoginGate('Acesso restrito', `Sua conta (${session.user.email}) não tem acesso ao painel.`, false);
+    return;
+  }
+  document.getElementById('site-view').classList.add('hidden');
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('dashboard-view').classList.add('active');
+  await loadPostsAdmin();
+  await loadCategorias();
+  populateCategoriaSelects();
+  renderPostsTable();
+  renderCategoriasTable();
+  limparEditor();
+}
+function showLoginGate(title, text, showBtn){
+  document.getElementById('site-view').classList.add('hidden');
+  document.getElementById('dashboard-view').classList.remove('active');
+  document.getElementById('login-gate').classList.remove('hidden');
+  document.getElementById('login-gate-title').textContent = title;
+  document.getElementById('login-gate-text').textContent = text;
+  document.getElementById('login-gate-btn').classList.toggle('hidden', !showBtn);
+}
+function exitAdmin(){
+  document.getElementById('dashboard-view').classList.remove('active');
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('site-view').classList.remove('hidden');
+  applyRouteFromQuery();
+}
+function dashNav(btn){
+  document.querySelectorAll('.dash-nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  dashNavByTarget(btn.dataset.target, true);
+}
+function dashNavByTarget(target){
+  document.querySelectorAll('.dash-section').forEach(s=>s.classList.toggle('active', s.id===target));
+  document.querySelectorAll('.dash-nav button').forEach(b=>b.classList.toggle('active', b.dataset.target===target));
+}
+
+/* =====================================================================
+   PAINEL — POSTS
+===================================================================== */
+function populateCategoriaSelects(){
+  const opts = categorias.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  document.getElementById('f-categoria').innerHTML = opts || '<option value="">Crie uma categoria primeiro</option>';
+  document.getElementById('posts-filter-cat').innerHTML = '<option value="">Todas as categorias</option>' + opts;
+}
+function renderPostsTable(){
+  const search = (document.getElementById('posts-search')?.value||'').toLowerCase();
+  const filtroCat = document.getElementById('posts-filter-cat')?.value;
+  let list = posts.filter(p=>p.titulo.toLowerCase().includes(search));
+  if(filtroCat) list = list.filter(p=>p.categoria_id===filtroCat);
+  document.getElementById('posts-table').innerHTML = list.map(p=>{
+    const wc = wordCount(p.conteudo);
+    const { pct } = seoScoreFor(p);
+    const seoColor = pct>=70?'var(--teal)':pct>=40?'var(--amber)':'#e08a9a';
+    return `<tr>
+      <td>${p.titulo}</td>
+      <td>${categoriaById(p.categoria_id).nome}</td>
+      <td><span class="badge ${p.status}">${p.status}</span></td>
+      <td>${wc}</td>
+      <td><span style="color:${seoColor}; font-weight:600;">${pct}</span></td>
+      <td>${p.views||0}</td>
+      <td><div class="row-actions">
+        <button onclick="editarPost('${p.id}')">Editar</button>
+        <button class="danger" onclick="excluirPost('${p.id}')">Excluir</button>
+      </div></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" style="color:var(--lavender); text-align:center; padding:30px;">Nenhum post encontrado.</td></tr>`;
+}
+function readEditorPost(){
+  return {
+    titulo: document.getElementById('f-titulo').value,
+    categoria_id: document.getElementById('f-categoria').value || null,
+    status: document.getElementById('f-status').value,
+    resumo: document.getElementById('f-resumo').value,
+    conteudo: document.getElementById('f-conteudo').value,
+    tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    keyword: document.getElementById('f-keyword').value,
+    meta_titulo: document.getElementById('f-meta-titulo').value,
+    meta_desc: document.getElementById('f-meta-desc').value,
+    slug: document.getElementById('f-slug').value,
+  };
+}
+function slugify(str){
+  return (str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+}
+function seoScoreFor(p){
+  let score=0, max=0; const checks=[];
+  const tLen=(p.meta_titulo||'').length;
+  max+=15; if(tLen>=40&&tLen<=60){score+=15; checks.push(['ok','Meta título com tamanho ideal']);}
+  else if(tLen>0){score+=7; checks.push(['warn','Meta título fora do ideal (40–60 caracteres)']);}
+  else checks.push(['bad','Meta título não definido']);
+
+  const dLen=(p.meta_desc||'').length;
+  max+=15; if(dLen>=120&&dLen<=160){score+=15; checks.push(['ok','Meta descrição com tamanho ideal']);}
+  else if(dLen>0){score+=7; checks.push(['warn','Meta descrição fora do ideal (120–160 caracteres)']);}
+  else checks.push(['bad','Meta descrição não definida']);
+
+  max+=15;
+  const kw=(p.keyword||'').toLowerCase().trim();
+  if(kw){
+    const inTitle=(p.titulo||'').toLowerCase().includes(kw);
+    const inContent=(p.conteudo||'').toLowerCase().includes(kw);
+    if(inTitle&&inContent){score+=15; checks.push(['ok','Palavra-chave presente no título e no texto']);}
+    else if(inContent){score+=8; checks.push(['warn','Palavra-chave no texto, mas ausente do título']);}
+    else checks.push(['bad','Palavra-chave não encontrada no texto']);
+  } else checks.push(['bad','Nenhuma palavra-chave principal definida']);
+
+  const wc=wordCount(p.conteudo);
+  max+=20; if(wc>=250){score+=20; checks.push(['ok',`Conteúdo com ${wc} palavras (bom tamanho)`]);}
+  else if(wc>=100){score+=10; checks.push(['warn',`Conteúdo com apenas ${wc} palavras`]);}
+  else checks.push(['bad',`Conteúdo muito curto (${wc} palavras)`]);
+
+  max+=15;
+  if(p.slug&&/^[a-z0-9-]+$/.test(p.slug)){score+=15; checks.push(['ok','Slug amigável e válido']);}
+  else checks.push(['bad','Slug ausente ou com caracteres inválidos']);
+
+  max+=10;
+  if(p.resumo&&p.resumo.length>=40){score+=10; checks.push(['ok','Resumo/excerto bem definido']);}
+  else checks.push(['warn','Resumo curto ou ausente']);
+
+  max+=10;
+  if((p.tags||[]).length>=2){score+=10; checks.push(['ok','Boas tags/categorização']);}
+  else checks.push(['warn','Poucas tags — adicione ao menos 2']);
+
+  return { pct: Math.round((score/max)*100), checks };
+}
+function onEditorInput(){
+  const titulo = document.getElementById('f-titulo').value;
+  if(!document.getElementById('f-slug').dataset.touched){
+    document.getElementById('f-slug').value = slugify(titulo);
+  }
+  const p = readEditorPost();
+  const tLen=(p.meta_titulo||'').length, dLen=(p.meta_desc||'').length;
+  document.getElementById('meta-titulo-count').textContent = `${tLen} / 60`;
+  document.getElementById('meta-titulo-count').classList.toggle('over', tLen>60);
+  document.getElementById('meta-desc-count').textContent = `${dLen} / 160`;
+  document.getElementById('meta-desc-count').classList.toggle('over', dLen>160);
+  document.getElementById('serp-slug').textContent = p.slug || 'seu-slug';
+  document.getElementById('serp-title').textContent = p.meta_titulo || p.titulo || 'Título do post aparecerá aqui';
+  document.getElementById('serp-desc').textContent = p.meta_desc || p.resumo || 'A meta descrição aparecerá aqui.';
+
+  const wc = wordCount(p.conteudo);
+  const kw = (p.keyword||'').toLowerCase().trim();
+  let dens = 0;
+  if(kw && wc>0){
+    const occurrences = ((p.conteudo||'').toLowerCase().match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'))||[]).length;
+    dens = (occurrences/wc)*100;
+  }
+  document.getElementById('keyword-density').innerHTML = kw
+    ? `Densidade de "<strong style="color:var(--amber)">${kw}</strong>": ${dens.toFixed(1)}% ${dens>0.5&&dens<3?'<span style="color:var(--teal);">— ideal</span>':dens===0?'<span style="color:#e08a9a;">— não encontrada no texto</span>':'<span style="color:var(--amber);">— revise a frequência (ideal 0.5%–3%)</span>'}`
+    : 'Defina uma palavra-chave principal para ver a análise de densidade.';
+
+  const { pct, checks } = seoScoreFor(p);
+  document.getElementById('seo-ring').style.setProperty('--pct', pct);
+  document.getElementById('seo-score-num').textContent = pct;
+  document.getElementById('seo-checklist').innerHTML = checks.map(([lvl,txt])=>`<div class="seo-check ${lvl}"><div class="dot"></div>${txt}</div>`).join('');
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const slugInput = document.getElementById('f-slug');
+  if(slugInput) slugInput.addEventListener('input', e=>{ e.target.dataset.touched='1'; });
+});
+function limparEditor(){
+  editingId = null;
+  document.getElementById('editor-title').textContent = 'Novo Post';
+  ['f-titulo','f-resumo','f-conteudo','f-tags','f-keyword','f-meta-titulo','f-meta-desc','f-slug'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-slug').dataset.touched='';
+  document.getElementById('f-status').value='rascunho';
+  if(categorias.length) document.getElementById('f-categoria').value = categorias[0].id;
+  onEditorInput();
+}
+function editarPost(id){
+  const p = posts.find(x=>x.id===id);
+  if(!p) return;
+  editingId = id;
+  document.getElementById('editor-title').textContent = 'Editar Post';
+  document.getElementById('f-titulo').value = p.titulo||'';
+  document.getElementById('f-categoria').value = p.categoria_id||'';
+  document.getElementById('f-status').value = p.status||'rascunho';
+  document.getElementById('f-resumo').value = p.resumo||'';
+  document.getElementById('f-conteudo').value = p.conteudo||'';
+  document.getElementById('f-tags').value = (p.tags||[]).join(', ');
+  document.getElementById('f-keyword').value = p.keyword||'';
+  document.getElementById('f-meta-titulo').value = p.meta_titulo||'';
+  document.getElementById('f-meta-desc').value = p.meta_desc||'';
+  document.getElementById('f-slug').value = p.slug||'';
+  document.getElementById('f-slug').dataset.touched='1';
+  onEditorInput();
+  dashNavByTarget('d-editor');
+  document.querySelectorAll('.dash-nav button').forEach(b=>b.classList.toggle('active', b.dataset.target==='d-editor'));
+}
+async function salvarPost(){
+  const p = readEditorPost();
+  if(!p.titulo || !p.slug){ showToast('Preencha ao menos título e slug.'); return; }
+  if(editingId){
+    const { error } = await db.from('blog_posts').update(p).eq('id', editingId);
+    if(error){ showToast('Erro ao salvar: '+error.message); return; }
+    showToast('Post atualizado.');
+  } else {
+    const { data, error } = await db.from('blog_posts').insert(p).select().single();
+    if(error){ showToast('Erro ao criar: '+error.message); return; }
+    editingId = data.id;
+    showToast('Post criado.');
+  }
+  await loadPostsAdmin();
+  renderPostsTable();
+  dashNavByTarget('d-posts');
+  document.querySelectorAll('.dash-nav button').forEach(b=>b.classList.toggle('active', b.dataset.target==='d-posts'));
+}
+async function excluirPost(id){
+  if(!confirm('Apagar este post? Isso não pode ser desfeito.')) return;
+  const { error } = await db.from('blog_posts').delete().eq('id', id);
+  if(error){ showToast('Erro ao excluir: '+error.message); return; }
+  await loadPostsAdmin();
+  renderPostsTable();
+  showToast('Post excluído.');
+}
+
+/* =====================================================================
+   PAINEL — CATEGORIAS
+===================================================================== */
+function renderCategoriasTable(){
+  document.getElementById('categorias-table').innerHTML = categorias.map(c=>{
+    const n = posts.filter(p=>p.categoria_id===c.id).length;
+    return `<tr>
+      <td>${c.nome}</td>
+      <td style="font-family:var(--font-mono); font-size:12px; color:var(--lavender);">${c.slug}</td>
+      <td style="color:var(--lavender);">${c.descricao||''}</td>
+      <td>${n}</td>
+      <td><div class="row-actions">
+        <button onclick="editarCategoria('${c.id}')">Editar</button>
+        <button class="danger" onclick="excluirCategoria('${c.id}')">Excluir</button>
+      </div></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" style="color:var(--lavender); text-align:center; padding:24px;">Nenhuma categoria ainda.</td></tr>`;
+}
+let editingCategoriaId = null;
+function novaCategoriaForm(){
+  editingCategoriaId = null;
+  document.getElementById('categoria-form-title').textContent = 'Nova Categoria';
+  document.getElementById('cf-nome').value='';
+  document.getElementById('cf-slug').value='';
+  document.getElementById('cf-slug').dataset.touched='';
+  document.getElementById('cf-descricao').value='';
+  document.getElementById('categoria-form-panel').classList.remove('hidden');
+}
+function fecharCategoriaForm(){ document.getElementById('categoria-form-panel').classList.add('hidden'); }
+function onCategoriaNomeInput(){
+  const slugEl = document.getElementById('cf-slug');
+  if(!slugEl.dataset.touched) slugEl.value = slugify(document.getElementById('cf-nome').value);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const el = document.getElementById('cf-slug');
+  if(el) el.addEventListener('input', e=>{ e.target.dataset.touched='1'; });
+});
+function editarCategoria(id){
+  const c = categorias.find(x=>x.id===id);
+  if(!c) return;
+  editingCategoriaId = id;
+  document.getElementById('categoria-form-title').textContent = 'Editar Categoria';
+  document.getElementById('cf-nome').value = c.nome;
+  document.getElementById('cf-slug').value = c.slug;
+  document.getElementById('cf-slug').dataset.touched='1';
+  document.getElementById('cf-descricao').value = c.descricao||'';
+  document.getElementById('categoria-form-panel').classList.remove('hidden');
+}
+async function salvarCategoria(){
+  const row = {
+    nome: document.getElementById('cf-nome').value,
+    slug: document.getElementById('cf-slug').value,
+    descricao: document.getElementById('cf-descricao').value,
+  };
+  if(!row.nome || !row.slug){ showToast('Preencha nome e slug.'); return; }
+  if(editingCategoriaId){
+    const { error } = await db.from('blog_categories').update(row).eq('id', editingCategoriaId);
+    if(error){ showToast('Erro: '+error.message); return; }
+    showToast('Categoria atualizada.');
+  } else {
+    const { error } = await db.from('blog_categories').insert(row);
+    if(error){ showToast('Erro: '+error.message); return; }
+    showToast('Categoria criada.');
+  }
+  await loadCategorias();
+  populateCategoriaSelects();
+  renderCategoriasTable();
+  fecharCategoriaForm();
+}
+async function excluirCategoria(id){
+  if(!confirm('Apagar esta categoria? Os posts dela ficam sem categoria.')) return;
+  const { error } = await db.from('blog_categories').delete().eq('id', id);
+  if(error){ showToast('Erro: '+error.message); return; }
+  await loadCategorias();
+  populateCategoriaSelects();
+  renderCategoriasTable();
+  showToast('Categoria excluída.');
+}
+
+/* =====================================================================
+   PAINEL — SEO DO SITE
+===================================================================== */
+function showSitemap(){
+  const box = document.getElementById('sitemap-preview');
+  const estaticas = ['', '?', 'categorias'].map(p=>`  <url><loc>${SITE_BASE}${p}</loc></url>`);
+  const catUrls = categorias.map(c=>`  <url><loc>${SITE_BASE}?categoria=${c.slug}</loc></url>`);
+  const postUrls = posts.filter(p=>p.status==='publicado').map(p=>`  <url><loc>${SITE_BASE}?post=${p.slug}</loc></url>`);
+  const urls = [...estaticas, ...catUrls, ...postUrls].join('\n');
+  box.textContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
+  box.style.display='block';
+}
+function showRobots(){
+  const box = document.getElementById('robots-preview');
+  box.textContent = `User-agent: *\nAllow: /\nSitemap: ${SITE_BASE}sitemap.xml`;
+  box.style.display='block';
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* =====================================================================
+   INIT
+===================================================================== */
+async function init(){
+  await loadCategorias();
+  await loadPostsPublico();
+  renderCatCards('cat-grid-home');
+  renderCatCards('cat-grid-full');
+  renderPostsHome();
+  applyRouteFromQuery();
+
+  // Se voltou de um login do Google (?admin=1 no redirect), abre o painel direto
+  const params = new URLSearchParams(location.search);
+  if(params.get('admin')==='1') enterAdmin();
+}
+init();
+</script>
+</body>
+</html>
