@@ -359,6 +359,60 @@ function Constellation({ matches, onSelect, selectedId, categories }) {
 // Painel de geração de imagem — usa a chave OpenAI do próprio cliente
 // (guardada em user_settings), via a Edge Function generate-dream-image.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Carrossel de artes abstratas — só um "gostinho" do estilo de imagem que a
+// IA pode gerar, pra tornar o convite mais visual. Não são imagens reais
+// geradas, só ilustrações de exemplo no estilo do site.
+// ---------------------------------------------------------------------------
+const DREAM_ART_PREVIEWS = [
+  { id: "agua", from: "#1b3a4a", to: "#6fa8a0", accent: "#f4f1ea" },
+  { id: "voar", from: "#2a1f45", to: "#c97b93", accent: "#e8a857" },
+  { id: "cosmos", from: "#0b0f1f", to: "#3d3466", accent: "#c9c3e0" },
+  { id: "fogo", from: "#3a1f1f", to: "#e8a857", accent: "#c97b93" },
+];
+
+function DreamArtThumb({ art }) {
+  return (
+    <svg viewBox="0 0 280 180" className="dream-art-svg">
+      <defs>
+        <radialGradient id={`grad-${art.id}`} cx="30%" cy="30%" r="80%">
+          <stop offset="0%" stopColor={art.to} />
+          <stop offset="100%" stopColor={art.from} />
+        </radialGradient>
+      </defs>
+      <rect width="280" height="180" fill={`url(#grad-${art.id})`} />
+      <circle cx="210" cy="45" r="26" fill={art.accent} opacity="0.85" />
+      <circle cx="60" cy="130" r="60" fill={art.accent} opacity="0.12" />
+      <circle cx="150" cy="150" r="34" fill={art.accent} opacity="0.18" />
+      <path d="M0,120 Q70,90 140,115 T280,105 V180 H0 Z" fill={art.from} opacity="0.55" />
+    </svg>
+  );
+}
+
+function DreamArtCarousel() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % DREAM_ART_PREVIEWS.length), 2600);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="dream-art-carousel">
+      {DREAM_ART_PREVIEWS.map((art, i) => (
+        <div key={art.id} className="dream-art-slide" style={{ opacity: i === index ? 1 : 0 }}>
+          <DreamArtThumb art={art} />
+        </div>
+      ))}
+      <div className="dream-art-dots">
+        {DREAM_ART_PREVIEWS.map((art, i) => (
+          <span key={art.id} className="dream-art-dot" style={{ opacity: i === index ? 1 : 0.3 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ImagePanel({ generatingImage, generatedImage, imageError, onGenerate }) {
   return (
     <div className="image-panel">
@@ -652,6 +706,36 @@ function OracleStyles() {
         color: var(--lavender);
       }
       .modal-steps a { color: var(--amber); text-decoration: underline; }
+      .dream-art-carousel {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 280 / 180;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      .dream-art-slide {
+        position: absolute;
+        inset: 0;
+        transition: opacity 1s ease;
+      }
+      .dream-art-svg { width: 100%; height: 100%; display: block; }
+      .dream-art-dots {
+        position: absolute;
+        bottom: 8px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+      }
+      .dream-art-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: var(--moon);
+        transition: opacity 0.4s ease;
+      }
       .generated-image {
         width: 100%;
         border-radius: 8px;
@@ -983,7 +1067,8 @@ function DreamOracle({ session, categories }) {
           <div className="journal-page max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
             <div className="modal-badge"><ImageIcon size={20} /></div>
             <h3 className="modal-title">Crie a imagem do seu sonho com IA</h3>
-            <p className="text-sm opacity-80 mb-4 mt-2">
+            <DreamArtCarousel />
+            <p className="text-sm opacity-80 mb-4 mt-3">
               Depois de interpretar um sonho, gere uma ilustração dele na hora — feita a partir
               do texto e dos símbolos reconhecidos. Só precisa de uma chave de API da OpenAI,
               sua e só sua: a imagem é gerada com o seu crédito, nada passa pela conta do site.
