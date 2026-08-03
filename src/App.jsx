@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Moon, Sparkles, BookOpen, X, LogOut, Image as ImageIcon } from "lucide-react";
+import { Moon, Sparkles, BookOpen, X, Image as ImageIcon } from "lucide-react";
 import { supabase, supabaseUrl, supabaseAnonKey } from "./supabaseClient";
 
 // ---------------------------------------------------------------------------
 // Dicionário local de símbolos. Isto é um espelho da tabela `symbols` no
-// Supabase (veja schema.sql) — mantido aqui como fallback para o app
+// Supabase (veja schema.sql). Mantido aqui como fallback para o app
 // funcionar mesmo antes de você popular o banco. Quando quiser que os
 // significados sejam editáveis sem deploy, troque este array por um
 // `supabase.from('symbols').select('*')` no useEffect abaixo.
@@ -12,24 +12,24 @@ import { supabase, supabaseUrl, supabaseAnonKey } from "./supabaseClient";
 const SYMBOLS = [
   { id: "agua", keys: ["agua", "mar", "oceano", "onda", "rio", "afogar", "afogando", "nadar"], label: "Água", category: "emocoes", meaning: "Suas emoções estão em movimento. Água calma sugere paz interior; água agitada ou o medo de afogar aponta para sentimentos que você não conseguiu processar ainda." },
   { id: "voar", keys: ["voar", "voando", "voo", "flutuar", "flutuando"], label: "Voar", category: "transformacao", meaning: "Desejo de liberdade ou de ver sua vida de um ponto de vista mais alto. Se o voo é fácil, indica confiança; se é difícil ou você cai, aponta para medo de perder o controle." },
-  { id: "queda", keys: ["cair", "caindo", "queda", "despencar"], label: "Queda", category: "medos", meaning: "Sensação de perda de controle sobre alguma área da vida — trabalho, relação ou uma decisão recente que te deixou insegura(o)." },
+  { id: "queda", keys: ["cair", "caindo", "queda", "despencar"], label: "Queda", category: "medos", meaning: "Sensação de perda de controle sobre alguma área da vida: trabalho, relação ou uma decisão recente que te deixou insegura(o)." },
   { id: "dente", keys: ["dente", "dentes", "dente caindo", "perder dente"], label: "Dentes caindo", category: "medos", meaning: "Ansiedade sobre imagem, envelhecimento ou medo de dizer algo e não ser levado a sério. Um clássico dos sonhos de ansiedade social." },
   { id: "cobra", keys: ["cobra", "serpente", "cobras"], label: "Cobra", category: "transformacao", meaning: "Transformação, cura ou uma ameaça oculta que você já percebeu mas ainda não enfrentou de frente. O contexto (a cobra ataca ou apenas observa) muda bastante o tom." },
   { id: "perseguicao", keys: ["perseguido", "perseguida", "sendo perseguido", "fugindo", "correndo de"], label: "Perseguição", category: "medos", meaning: "Algo na vida desperta que você está evitando enfrentar. O perseguidor costuma representar o próprio problema, não uma pessoa específica." },
-  { id: "morte", keys: ["morte", "morrendo", "morrer", "funeral", "enterro"], label: "Morte", category: "transformacao", meaning: "Raramente é literal. Costuma marcar o fim de uma fase, hábito ou versão de si mesmo — para dar espaço a algo novo." },
+  { id: "morte", keys: ["morte", "morrendo", "morrer", "funeral", "enterro"], label: "Morte", category: "transformacao", meaning: "Raramente é literal. Costuma marcar o fim de uma fase, hábito ou versão de si mesmo, para dar espaço a algo novo." },
   { id: "bebe", keys: ["bebe", "recem-nascido", "gravida", "gravidez"], label: "Bebê", category: "transformacao", meaning: "Um projeto, ideia ou parte de você que ainda está em formação, frágil e pedindo cuidado." },
-  { id: "casamento", keys: ["casamento", "casando", "noiva", "noivo"], label: "Casamento", category: "relacoes", meaning: "União — de duas partes de si mesma(o), ou um compromisso real que está sendo avaliado, consciente ou não." },
+  { id: "casamento", keys: ["casamento", "casando", "noiva", "noivo"], label: "Casamento", category: "relacoes", meaning: "União: de duas partes de si mesma(o), ou um compromisso real que está sendo avaliado, consciente ou não." },
   { id: "casa", keys: ["casa", "quarto", "comodo", "porta trancada", "sotao", "porao"], label: "Casa", category: "emocoes", meaning: "A casa costuma representar você mesma(o). Cômodos desconhecidos sugerem partes de sua personalidade ainda inexploradas." },
   { id: "escada", keys: ["escada", "escadas", "subindo escada", "descendo escada"], label: "Escada", category: "transformacao", meaning: "Progresso ou retrocesso em direção a um objetivo. Subir indica esforço consciente; descer pode indicar um retorno a padrões antigos." },
-  { id: "exame", keys: ["prova", "exame", "teste", "vestibular"], label: "Exame / Prova", category: "medos", meaning: "Medo de ser avaliada(o) e não estar à altura — comum em fases de cobrança pessoal ou de início de algo novo (emprego, curso, projeto)." },
-  { id: "fogo", keys: ["fogo", "incendio", "queimando", "chamas"], label: "Fogo", category: "transformacao", meaning: "Paixão intensa ou raiva não expressa. O fogo destrói para limpar — pode indicar que algo precisa acabar para você seguir em frente." },
+  { id: "exame", keys: ["prova", "exame", "teste", "vestibular"], label: "Exame / Prova", category: "medos", meaning: "Medo de ser avaliada(o) e não estar à altura, comum em fases de cobrança pessoal ou de início de algo novo (emprego, curso, projeto)." },
+  { id: "fogo", keys: ["fogo", "incendio", "queimando", "chamas"], label: "Fogo", category: "transformacao", meaning: "Paixão intensa ou raiva não expressa. O fogo destrói para limpar; pode indicar que algo precisa acabar para você seguir em frente." },
   { id: "sangue", keys: ["sangue", "sangrando", "ferido", "ferida"], label: "Sangue", category: "emocoes", meaning: "Vitalidade, perda de energia ou uma mágoa que ainda está exposta. Pode também simbolizar vínculos familiares fortes." },
   { id: "espelho", keys: ["espelho", "reflexo", "reflexao"], label: "Espelho", category: "emocoes", meaning: "Autoimagem e autoconhecimento. Um espelho que distorce ou mostra outra pessoa aponta para um conflito entre quem você é e quem acha que deveria ser." },
-  { id: "labirinto", keys: ["labirinto", "perdido", "perdida", "sem saida"], label: "Labirinto", category: "medos", meaning: "Sensação de estar sem direção clara diante de uma decisão importante — geralmente aparece em fases de indecisão prolongada." },
+  { id: "labirinto", keys: ["labirinto", "perdido", "perdida", "sem saida"], label: "Labirinto", category: "medos", meaning: "Sensação de estar sem direção clara diante de uma decisão importante. Geralmente aparece em fases de indecisão prolongada." },
   { id: "carro", keys: ["carro", "dirigindo", "sem freio", "freio nao funciona", "acidente de carro"], label: "Carro", category: "transformacao", meaning: "O quanto você sente estar no controle da própria vida. Freios que falham indicam a sensação de que as coisas avançam rápido demais." },
-  { id: "animal", keys: ["cachorro", "gato", "lobo", "leao", "aranha", "inseto", "aranhas"], label: "Animal", category: "relacoes", meaning: "Instintos e impulsos — o tipo de animal e como ele age no sonho revelam qual instinto está mais ativo em você agora (proteção, medo, desejo, raiva)." },
+  { id: "animal", keys: ["cachorro", "gato", "lobo", "leao", "aranha", "inseto", "aranhas"], label: "Animal", category: "relacoes", meaning: "Instintos e impulsos: o tipo de animal e como ele age no sonho revelam qual instinto está mais ativo em você agora (proteção, medo, desejo, raiva)." },
   { id: "chuva", keys: ["chuva", "chovendo", "tempestade"], label: "Chuva / Tempestade", category: "emocoes", meaning: "Emoções represadas sendo liberadas. Uma tempestade violenta sugere um conflito interno chegando ao limite antes de se resolver." },
-  { id: "voz", keys: ["voz desconhecida", "gritando", "grito", "gritar", "sem voz", "nao conseguia falar"], label: "Voz / Grito", category: "relacoes", meaning: "Necessidade de ser ouvida(o) — ou frustração por sentir que, mesmo tentando, sua opinião não chega às pessoas certas." },
+  { id: "voz", keys: ["voz desconhecida", "gritando", "grito", "gritar", "sem voz", "nao conseguia falar"], label: "Voz / Grito", category: "relacoes", meaning: "Necessidade de ser ouvida(o), ou frustração por sentir que, mesmo tentando, sua opinião não chega às pessoas certas." },
 ];
 
 const DEFAULT_CATEGORIES = [
@@ -45,11 +45,35 @@ function getCategoryMeta(categories, id) {
 
 const ADMIN_EMAIL = "micaelpsicanalise@gmail.com";
 
+// ---------------------------------------------------------------------------
+// Menu fixo, igual em todas as páginas do app (login, app principal, admin).
+// O blog tem o seu próprio, no mesmo estilo visual.
+// ---------------------------------------------------------------------------
+function TopNav({ session }) {
+  const base = import.meta.env.BASE_URL;
+  const isAdminRoute = new URLSearchParams(window.location.search).get("admin") === "1";
+  const isAdmin = session && session.user.email === ADMIN_EMAIL;
+
+  return (
+    <nav className="topnav">
+      <a href={base} className="topnav-brand">Onírica</a>
+      <div className="topnav-links">
+        <a href={base + "blog/"}>Linguagem dos Sonhos</a>
+        {isAdmin && !isAdminRoute && <a href="?admin=1">Admin</a>}
+        {isAdminRoute && <a href={base}>← Voltar ao app</a>}
+        {session && (
+          <button className="btn-ghost" onClick={() => supabase.auth.signOut()}>Sair</button>
+        )}
+      </div>
+    </nav>
+  );
+}
+
 const EMPTY_NEW_SYMBOL = { id: "", label: "", category: "emocoes", keys: "", meaning: "" };
 const EMPTY_NEW_CATEGORY = { id: "", label: "", color: "#c9c3e0" };
 
 // ---------------------------------------------------------------------------
-// Hub de administração — só carrega dados/edita se o e-mail logado bater com
+// Hub de administração. Só carrega dados/edita se o e-mail logado bater com
 // ADMIN_EMAIL. A proteção de verdade está nas policies de RLS do banco
 // (admin-permissions.sql / categories-setup.sql); isto aqui é só a interface.
 // ---------------------------------------------------------------------------
@@ -167,12 +191,15 @@ function AdminPage({ session, categories, reloadCategories }) {
 
   if (!isAdmin) {
     return (
-      <div className="oracle-root flex items-center justify-center min-h-screen">
+      <div className="oracle-root">
         <OracleStyles />
         <Starfield />
-        <div className="result-card max-w-sm text-center relative z-10">
-          <h3>Acesso restrito</h3>
-          <p>Essa página é só para administração do dicionário. Sua conta ({session.user.email}) não tem acesso.</p>
+        <TopNav session={session} />
+        <div className="page-content flex items-center justify-center" style={{ minHeight: "70vh" }}>
+          <div className="result-card max-w-sm text-center relative z-10">
+            <h3>Acesso restrito</h3>
+            <p>Essa página é só para administração do dicionário. Sua conta ({session.user.email}) não tem acesso.</p>
+          </div>
         </div>
       </div>
     );
@@ -182,13 +209,11 @@ function AdminPage({ session, categories, reloadCategories }) {
     <div className="oracle-root">
       <OracleStyles />
       <Starfield />
-      <div className="max-w-4xl mx-auto relative z-10">
-        <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
-          <div>
-            <div className="oracle-eyebrow flex items-center gap-2"><Moon size={12} /> hub de administração</div>
-            <h1 className="oracle-title" style={{ fontSize: "34px" }}>Dicionário de símbolos</h1>
-          </div>
-          <a href={import.meta.env.BASE_URL} className="btn-ghost">← Voltar ao site</a>
+      <TopNav session={session} />
+      <div className="max-w-4xl mx-auto relative z-10 page-content">
+        <div className="mb-8">
+          <div className="oracle-eyebrow flex items-center gap-2"><Moon size={12} /> hub de administração</div>
+          <h1 className="oracle-title" style={{ fontSize: "34px" }}>Dicionário de símbolos</h1>
         </div>
 
         {errorMsg && <p className="text-xs text-red-300 mb-4">{errorMsg}</p>}
@@ -356,11 +381,11 @@ function Constellation({ matches, onSelect, selectedId, categories }) {
 }
 
 // ---------------------------------------------------------------------------
-// Painel de geração de imagem — usa a chave OpenAI do próprio cliente
+// Painel de geração de imagem. Usa a chave OpenAI do próprio cliente
 // (guardada em user_settings), via a Edge Function generate-dream-image.
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// Carrossel de artes abstratas — só um "gostinho" do estilo de imagem que a
+// Carrossel de artes abstratas: só um "gostinho" do estilo de imagem que a
 // IA pode gerar, pra tornar o convite mais visual. Não são imagens reais
 // geradas, só ilustrações de exemplo no estilo do site.
 // ---------------------------------------------------------------------------
@@ -435,7 +460,7 @@ function ImagePanel({ generatingImage, generatedImage, imageError, onGenerate })
 }
 
 // ---------------------------------------------------------------------------
-// Landing / login — apresenta o site antes de pedir pra entrar. A prévia de
+// Landing / login. Apresenta o site antes de pedir pra entrar. A prévia de
 // símbolos usa uma amostra fixa (não é interativa) só para dar gosto do que
 // vem depois do login.
 // ---------------------------------------------------------------------------
@@ -449,10 +474,10 @@ const PREVIEW_SYMBOLS = [
 ];
 
 const FEATURES = [
-  { icon: Sparkles, title: "Dicionário de símbolos", desc: "Escreva o sonho como veio até você — a gente reconhece os elementos e monta a interpretação na hora." },
+  { icon: Sparkles, title: "Dicionário de símbolos", desc: "Escreva o sonho como veio até você. A gente reconhece os elementos e monta a interpretação na hora." },
   { icon: Moon, title: "Constelação visual", desc: "Cada símbolo reconhecido vira uma estrela no seu mapa, conectada às outras da mesma história." },
   { icon: ImageIcon, title: "Imagem gerada por IA", desc: "Transforme o relato do sonho numa ilustração, com a sua própria conta na OpenAI." },
-  { icon: BookOpen, title: "Histórico privado", desc: "Todo sonho salvo fica só seu — protegido por login, visível apenas para você." },
+  { icon: BookOpen, title: "Histórico privado", desc: "Todo sonho salvo fica só seu, protegido por login, visível apenas para você." },
 ];
 
 function LoginScreen({ categories }) {
@@ -470,7 +495,7 @@ function LoginScreen({ categories }) {
       .select("titulo, resumo, slug, data")
       .eq("status", "publicado")
       .order("data", { ascending: false })
-      .limit(3);
+      .limit(4);
     if (!error) setBlogPosts(data ?? []);
   }
 
@@ -487,8 +512,9 @@ function LoginScreen({ categories }) {
   }
 
   return (
-    <div className="oracle-root" style={{ padding: 0 }}>
+    <div className="oracle-root">
       <OracleStyles />
+      <TopNav session={null} />
 
       {/* HERO */}
       <div className="landing-root" style={{ minHeight: "auto", padding: "9vh 24px 6vh" }}>
@@ -505,7 +531,7 @@ function LoginScreen({ categories }) {
           </h1>
           <p className="oracle-sub mx-auto mt-2">
             Escreva o sonho como ele veio até você. A gente cruza o texto com um
-            dicionário de símbolos e monta um mapa — cada elemento reconhecido
+            dicionário de símbolos e monta um mapa. Cada elemento reconhecido
             vira uma estrela, e juntas elas contam a mesma história por outro ângulo.
           </p>
 
@@ -527,11 +553,11 @@ function LoginScreen({ categories }) {
               </svg>
               Continuar com Google
             </button>
-            <a href={blogBaseUrl} className="btn-ghost" style={{ padding: "12px 22px" }}>Ler o blog</a>
+            <a href={blogBaseUrl} className="btn-ghost" style={{ padding: "12px 22px" }}>Linguagem dos Sonhos</a>
           </div>
           {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
           <p className="text-xs opacity-40 mt-6">
-            Seus sonhos ficam privados — só você tem acesso ao seu histórico.
+            Seus sonhos ficam privados. Só você tem acesso ao seu histórico.
           </p>
         </div>
       </div>
@@ -553,24 +579,26 @@ function LoginScreen({ categories }) {
         </div>
       </div>
 
-      {/* DO BLOG */}
+      {/* LINGUAGEM DOS SONHOS */}
       {blogPosts.length > 0 && (
-        <div className="max-w-4xl mx-auto relative z-10" style={{ padding: "4vh 24px 8vh" }}>
-          <div className="text-center mb-10">
-            <div className="oracle-eyebrow mb-2">do blog</div>
-            <h2 className="oracle-title" style={{ fontSize: "clamp(24px,3.4vw,34px)" }}>Textos sobre sonhos</h2>
+        <div className="max-w-5xl mx-auto relative z-10" style={{ padding: "6vh 24px 10vh" }}>
+          <div className="text-center mb-12">
+            <div className="oracle-eyebrow mb-2">linguagem dos sonhos</div>
+            <h2 className="oracle-title" style={{ fontSize: "clamp(28px,4vw,40px)" }}>Textos pra ir mais fundo</h2>
+            <p className="oracle-sub mx-auto mt-3">Símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos, explicados com calma.</p>
           </div>
-          <div className="feature-grid">
+          <div className="post-grid">
             {blogPosts.map((p) => (
-              <a key={p.slug} href={`${blogBaseUrl}?post=${p.slug}`} className="feature-card" style={{ cursor: "pointer" }}>
+              <a key={p.slug} href={`${blogBaseUrl}?post=${p.slug}`} className="post-card">
                 <div className="post-card-date">{new Date(p.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}</div>
-                <div className="feature-title">{p.titulo}</div>
-                <p className="feature-desc">{p.resumo}</p>
+                <div className="post-card-title">{p.titulo}</div>
+                <p className="post-card-desc">{p.resumo}</p>
+                <span className="post-card-link">Ler o texto →</span>
               </a>
             ))}
           </div>
-          <div className="text-center mt-8">
-            <a href={blogBaseUrl} className="btn-ghost">Ver todos os posts →</a>
+          <div className="text-center mt-10">
+            <a href={blogBaseUrl} className="btn-primary" style={{ textDecoration: "none", display: "inline-block" }}>Ver todos os textos</a>
           </div>
         </div>
       )}
@@ -650,10 +678,41 @@ function OracleStyles() {
         background: var(--ink);
         background-image: radial-gradient(circle at 15% 10%, rgba(201,195,224,0.06), transparent 40%),
                           radial-gradient(circle at 85% 90%, rgba(232,168,87,0.05), transparent 45%);
-        color: var(--moon); font-family: 'Inter', sans-serif; min-height: 100%; padding: 48px 24px 64px;
+        color: var(--moon); font-family: 'Inter', sans-serif; min-height: 100%;
         position: relative;
         overflow: hidden;
       }
+      .page-content { padding: 40px 24px 64px; }
+      .topnav {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(11,15,31,0.82);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(201,195,224,0.14);
+      }
+      .topnav-brand {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 18px;
+        color: var(--moon);
+      }
+      .topnav-links {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12.5px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .topnav-links a { color: var(--lavender); transition: color 0.2s; }
+      .topnav-links a:hover { color: var(--amber); }
+      .topnav-links .btn-ghost { padding: 8px 16px; font-size: 12px; }
       .starfield { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
       .star {
         position: absolute;
@@ -904,6 +963,43 @@ function OracleStyles() {
         color: var(--amber);
         margin-bottom: 8px;
       }
+      .post-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 22px;
+      }
+      .post-card {
+        background: var(--panel-2);
+        border: 1px solid rgba(201,195,224,0.14);
+        border-radius: 10px;
+        padding: 32px 28px;
+        display: block;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+      .post-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--amber);
+      }
+      .post-card-title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 22px;
+        color: var(--moon);
+        margin-bottom: 12px;
+        line-height: 1.25;
+      }
+      .post-card-desc {
+        font-size: 14.5px;
+        color: var(--lavender);
+        line-height: 1.7;
+        margin-bottom: 18px;
+      }
+      .post-card-link {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        color: var(--amber);
+        letter-spacing: 0.02em;
+      }
       .landing-root {
         min-height: 100vh;
         display: flex;
@@ -1103,7 +1199,8 @@ function DreamOracle({ session, categories }) {
     <div className="oracle-root">
       <OracleStyles />
       <Starfield />
-      <div className="max-w-5xl mx-auto relative z-10">
+      <TopNav session={session} />
+      <div className="max-w-5xl mx-auto relative z-10 page-content">
         <div className="flex items-start justify-between flex-wrap gap-6 mb-10">
           <div>
             <div className="oracle-eyebrow flex items-center gap-2">
@@ -1114,20 +1211,12 @@ function DreamOracle({ session, categories }) {
             </h1>
             <p className="oracle-sub">
               Escreva o sonho como ele veio até você. Cada símbolo reconhecido vira uma
-              estrela no seu mapa — juntas, elas contam a mesma história por outro ângulo.
+              estrela no seu mapa. Juntas, elas contam a mesma história por outro ângulo.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => { setKeyInput(apiKey); setShowKeyModal(true); }} className="btn-ghost flex items-center gap-2 text-xs py-1.5 px-3">
-              <ImageIcon size={13} /> {apiKey ? "Chave OpenAI ✓" : "Criar imagem do sonho com IA"}
-            </button>
-            {session.user.email === ADMIN_EMAIL && (
-              <a href="?admin=1" className="btn-ghost text-xs py-1.5 px-3">Admin</a>
-            )}
-            <button className="btn-ghost flex items-center gap-2" onClick={() => supabase.auth.signOut()}>
-              <LogOut size={14} /> Sair ({session.user.email})
-            </button>
-          </div>
+          <button onClick={() => { setKeyInput(apiKey); setShowKeyModal(true); }} className="btn-ghost flex items-center gap-2 text-xs py-1.5 px-3">
+            <ImageIcon size={13} /> {apiKey ? "Chave OpenAI ✓" : "Criar imagem do sonho com IA"}
+          </button>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -1162,7 +1251,7 @@ function DreamOracle({ session, categories }) {
                 <div className="result-card">
                   <div className="meaning-eyebrow">Nenhum símbolo reconhecido</div>
                   <h3>Esse sonho é só seu, por enquanto</h3>
-                  <p>Não encontrei nenhuma palavra do nosso dicionário nesse texto. Ainda assim, você pode guardar o sonho no seu histórico — o dicionário só ajuda com a interpretação, ele não decide o que vale a pena lembrar.</p>
+                  <p>Não encontrei nenhuma palavra do nosso dicionário nesse texto. Ainda assim, você pode guardar o sonho no seu histórico. O dicionário só ajuda com a interpretação: ele não decide o que vale a pena lembrar.</p>
                 </div>
                 <ImagePanel
                   generatingImage={generatingImage}
@@ -1207,7 +1296,7 @@ function DreamOracle({ session, categories }) {
           <div className="oracle-eyebrow mb-3">seu histórico</div>
           {loadingEntries && <p className="text-sm opacity-50">Carregando...</p>}
           {!loadingEntries && entries.length === 0 && (
-            <p className="text-sm opacity-50">Nenhum sonho salvo ainda — o primeiro fica aqui assim que você salvar.</p>
+            <p className="text-sm opacity-50">Nenhum sonho salvo ainda. O primeiro fica aqui assim que você salvar.</p>
           )}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {entries.map((e) => (
@@ -1240,7 +1329,7 @@ function DreamOracle({ session, categories }) {
             <h3 className="modal-title">Crie a imagem do seu sonho com IA</h3>
             <DreamArtCarousel />
             <p className="text-sm opacity-80 mb-4 mt-3">
-              Depois de interpretar um sonho, gere uma ilustração dele na hora — feita a partir
+              Depois de interpretar um sonho, gere uma ilustração dele na hora, feita a partir
               do texto e dos símbolos reconhecidos. Só precisa de uma chave de API da OpenAI,
               sua e só sua: a imagem é gerada com o seu crédito, nada passa pela conta do site.
             </p>
