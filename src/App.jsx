@@ -483,10 +483,12 @@ const FEATURES = [
 function LoginScreen({ categories }) {
   const [error, setError] = useState(null);
   const [blogPosts, setBlogPosts] = useState([]);
+  const [blogCategories, setBlogCategories] = useState([]);
   const blogBaseUrl = import.meta.env.BASE_URL + "blog/";
 
   useEffect(() => {
     loadBlogPosts();
+    loadBlogCategories();
   }, []);
 
   async function loadBlogPosts() {
@@ -497,6 +499,14 @@ function LoginScreen({ categories }) {
       .order("data", { ascending: false })
       .limit(4);
     if (!error) setBlogPosts(data ?? []);
+  }
+
+  async function loadBlogCategories() {
+    const { data, error } = await supabase
+      .from("blog_categories")
+      .select("nome, slug, descricao")
+      .order("nome");
+    if (!error) setBlogCategories(data ?? []);
   }
 
   async function handleGoogleLogin() {
@@ -579,14 +589,30 @@ function LoginScreen({ categories }) {
         </div>
       </div>
 
-      {/* LINGUAGEM DOS SONHOS */}
-      {blogPosts.length > 0 && (
-        <div className="max-w-5xl mx-auto relative z-10" style={{ padding: "6vh 24px 10vh" }}>
+      {/* LINGUAGEM DOS SONHOS: categorias (sempre visível) */}
+      {blogCategories.length > 0 && (
+        <div className="max-w-5xl mx-auto relative z-10" style={{ padding: "6vh 24px", paddingBottom: blogPosts.length > 0 ? "2vh" : "10vh" }}>
           <div className="text-center mb-12">
             <div className="oracle-eyebrow mb-2">linguagem dos sonhos</div>
             <h2 className="oracle-title" style={{ fontSize: "clamp(28px,4vw,40px)" }}>Textos pra ir mais fundo</h2>
             <p className="oracle-sub mx-auto mt-3">Símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos, explicados com calma.</p>
           </div>
+          <div className="post-grid">
+            {blogCategories.map((c) => (
+              <a key={c.slug} href={`${blogBaseUrl}?categoria=${c.slug}`} className="post-card">
+                <div className="post-card-date">categoria</div>
+                <div className="post-card-title">{c.nome}</div>
+                <p className="post-card-desc">{c.descricao}</p>
+                <span className="post-card-link">Explorar →</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* LINGUAGEM DOS SONHOS: posts recentes */}
+      {blogPosts.length > 0 && (
+        <div className="max-w-5xl mx-auto relative z-10" style={{ padding: "2vh 24px 10vh" }}>
           <div className="post-grid">
             {blogPosts.map((p) => (
               <a key={p.slug} href={`${blogBaseUrl}?post=${p.slug}`} className="post-card">
