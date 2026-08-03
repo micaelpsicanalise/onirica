@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blog Onírica — a linguagem dos seus sonhos</title>
-<meta name="description" content="Textos sobre símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos — para entender melhor o que sua mente diz enquanto você dorme.">
+<title>Onírica: Linguagem dos Sonhos</title>
+<meta name="description" content="Textos sobre símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos. Para entender melhor o que sua mente diz enquanto você dorme.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -241,7 +241,7 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
 <div id="site-view">
   <nav class="topnav">
     <div class="brand" onclick="navSection('inicio')">
-      <span class="brand-text">Onírica <em>blog</em></span>
+      <span class="brand-text">Onírica</span>
     </div>
     <div class="nav-links">
       <a href="#" onclick="navSection('inicio');return false;">Início</a>
@@ -255,9 +255,9 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
   <!-- INÍCIO -->
   <section id="sec-inicio">
     <div class="hero">
-      <div class="eyebrow" style="margin-bottom:16px;">blog onírica</div>
+      <div class="eyebrow" style="margin-bottom:16px;">linguagem dos sonhos</div>
       <h1>A linguagem <em>dos seus sonhos</em></h1>
-      <p class="hero-sub">Símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos — textos pra entender melhor o que sua mente diz enquanto você dorme.</p>
+      <p class="hero-sub">Símbolos, psicologia dos sonhos, pesadelos e sonhos lúcidos. Textos pra entender melhor o que sua mente diz enquanto você dorme.</p>
     </div>
 
     <div class="section">
@@ -315,24 +315,24 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
   <section id="sec-sobre" class="hidden">
     <div class="section">
       <div class="about">
-        <div class="eyebrow" style="margin-bottom:14px;">sobre o blog</div>
+        <div class="eyebrow" style="margin-bottom:14px;">sobre a linguagem dos sonhos</div>
         <h3>Um espaço pra entender o que os sonhos dizem</h3>
-        <p>Este blog é a extensão do <a href="../" style="color:var(--amber); text-decoration:underline;">Onírica</a>, o app que interpreta sonhos a partir de um dicionário de símbolos.</p>
+        <p>Esta seção é a extensão do <a href="../" style="color:var(--amber); text-decoration:underline;">Onírica</a>, o app que interpreta sonhos a partir de um dicionário de símbolos.</p>
         <p>Aqui, os textos vão mais fundo: a psicologia por trás dos sonhos, o que a ciência já entendeu (e o que ainda não), como lidar com pesadelos recorrentes, e como técnicas de sonho lúcido funcionam na prática.</p>
-        <p>Não é um consultório nem substitui acompanhamento profissional — é um lugar pra se interessar mais pelo que acontece na sua cabeça enquanto ela dorme.</p>
+        <p>Não é um consultório nem substitui acompanhamento profissional. É um lugar pra se interessar mais pelo que acontece na sua cabeça enquanto ela dorme.</p>
       </div>
     </div>
   </section>
 
   <footer>
-    <div class="brand-text">Onírica <em>blog</em></div>
+    <div class="brand-text">Onírica</div>
     <div class="footer-links">
       <a href="#" onclick="navSection('inicio');return false;">Início</a>
       <a href="#" onclick="navSection('categorias');return false;">Categorias</a>
       <a href="#" onclick="navSection('sobre');return false;">Sobre</a>
       <a href="../">App Onírica</a>
     </div>
-    <div class="footer-note">© Onírica — blog</div>
+    <div class="footer-note">© Onírica: Linguagem dos Sonhos</div>
   </footer>
 </div>
 
@@ -344,7 +344,7 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
     <h3 id="login-gate-title">Painel restrito</h3>
     <p id="login-gate-text">Entre com a mesma conta Google usada como administradora do Onírica.</p>
     <button class="btn-primary" style="width:100%;" onclick="loginGoogle()" id="login-gate-btn">Entrar com Google</button>
-    <button class="btn-ghost" style="width:100%; margin-top:10px;" onclick="exitAdmin()">Voltar ao blog</button>
+    <button class="btn-ghost" style="width:100%; margin-top:10px;" onclick="exitAdmin()">Voltar</button>
   </div>
 </div>
 
@@ -353,7 +353,7 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
 ===================================================================== -->
 <div class="dash" id="dashboard-view">
   <aside class="dash-sidebar">
-    <div class="dash-brand" onclick="exitAdmin()">Painel do Blog</div>
+    <div class="dash-brand" onclick="exitAdmin()">Painel: Linguagem dos Sonhos</div>
     <nav class="dash-nav">
       <div class="dash-nav-label">Conteúdo</div>
       <button data-target="d-posts" class="active" onclick="dashNav(this)">Posts</button>
@@ -363,7 +363,7 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
       <button data-target="d-seo" onclick="dashNav(this)">SEO do site</button>
     </nav>
     <div class="dash-exit">
-      <button class="btn-ghost" onclick="exitAdmin()">← Voltar ao blog</button>
+      <button class="btn-ghost" onclick="exitAdmin()">← Voltar</button>
       <button class="btn-ghost btn-danger" onclick="logoutAdmin()">Sair da conta</button>
     </div>
   </aside>
@@ -496,7 +496,7 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
 
     <!-- SEO DO SITE -->
     <section class="dash-section" id="d-seo">
-      <div class="dash-topbar"><div><h1>SEO do site</h1><div class="sub">Arquivos técnicos que ajudam buscadores a indexar o blog.</div></div></div>
+      <div class="dash-topbar"><div><h1>SEO do site</h1><div class="sub">Arquivos técnicos que ajudam buscadores a indexar o site.</div></div></div>
       <div class="panel">
         <h3>sitemap.xml</h3>
         <p style="color:var(--lavender); font-size:13.5px;">Lista todas as URLs públicas (posts publicados e categorias) para os buscadores. Copie e salve como <code>sitemap.xml</code> na raiz do site.</p>
@@ -517,7 +517,7 @@ label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text
 
 <script>
 /* =====================================================================
-   CONFIGURAÇÃO — mesma conta Supabase e mesmo e-mail admin do app Onírica
+   CONFIGURAÇÃO: mesma conta Supabase e mesmo e-mail admin do app Onírica
 ===================================================================== */
 const SUPABASE_URL = "https://hbrlojiuepvppatkeqlu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_LdaQ2ZBeXbDMDcbvheBCHg_c5JVPKZJ";
@@ -551,7 +551,7 @@ function categoriaBySlug(slug){ return categorias.find(c=>c.slug===slug); }
 function postBySlug(slug){ return posts.find(p=>p.slug===slug); }
 
 /* =====================================================================
-   RENDER — SITE PÚBLICO
+   RENDER: SITE PÚBLICO
 ===================================================================== */
 function renderCatCards(targetId){
   const el = document.getElementById(targetId);
@@ -589,7 +589,7 @@ function renderPostsCategoria(cat){
 }
 function renderPost(p){
   document.getElementById('post-tag').textContent = categoriaById(p.categoria_id).nome;
-  document.title = (p.meta_titulo || p.titulo) + ' — Blog Onírica';
+  document.title = (p.meta_titulo || p.titulo) + ', Onírica: Linguagem dos Sonhos';
   document.getElementById('post-titulo').textContent = p.titulo;
   document.getElementById('post-meta').textContent = formatDate(p.data) + ' · ' + wordCount(p.conteudo) + ' palavras';
   document.getElementById('post-corpo').innerHTML = (p.conteudo||'').split(/\n\s*\n/).map(par=>`<p>${par.replace(/\n/g,'<br>')}</p>`).join('');
@@ -602,7 +602,7 @@ function formatDate(d){
 function wordCount(txt){ return (txt||'').trim().split(/\s+/).filter(Boolean).length; }
 
 /* =====================================================================
-   NAVEGAÇÃO (rotas por query string — funciona em qualquer host estático)
+   NAVEGAÇÃO (rotas por query string; funciona em qualquer host estático)
 ===================================================================== */
 function navSection(name, extra){
   ['inicio','categorias','categoria','post','sobre'].forEach(s=>{
@@ -710,7 +710,7 @@ function dashNavByTarget(target){
 }
 
 /* =====================================================================
-   PAINEL — POSTS
+   PAINEL: POSTS
 ===================================================================== */
 function populateCategoriaSelects(){
   const opts = categorias.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
@@ -794,7 +794,7 @@ function seoScoreFor(p){
 
   max+=10;
   if((p.tags||[]).length>=2){score+=10; checks.push(['ok','Boas tags/categorização']);}
-  else checks.push(['warn','Poucas tags — adicione ao menos 2']);
+  else checks.push(['warn','Poucas tags: adicione ao menos 2']);
 
   return { pct: Math.round((score/max)*100), checks };
 }
@@ -821,7 +821,7 @@ function onEditorInput(){
     dens = (occurrences/wc)*100;
   }
   document.getElementById('keyword-density').innerHTML = kw
-    ? `Densidade de "<strong style="color:var(--amber)">${kw}</strong>": ${dens.toFixed(1)}% ${dens>0.5&&dens<3?'<span style="color:var(--teal);">— ideal</span>':dens===0?'<span style="color:#e08a9a;">— não encontrada no texto</span>':'<span style="color:var(--amber);">— revise a frequência (ideal 0.5%–3%)</span>'}`
+    ? `Densidade de "<strong style="color:var(--amber)">${kw}</strong>": ${dens.toFixed(1)}% ${dens>0.5&&dens<3?'<span style="color:var(--teal);">(ideal)</span>':dens===0?'<span style="color:#e08a9a;">(não encontrada no texto)</span>':'<span style="color:var(--amber);">(revise a frequência, ideal 0.5%–3%)</span>'}`
     : 'Defina uma palavra-chave principal para ver a análise de densidade.';
 
   const { pct, checks } = seoScoreFor(p);
@@ -890,7 +890,7 @@ async function excluirPost(id){
 }
 
 /* =====================================================================
-   PAINEL — CATEGORIAS
+   PAINEL: CATEGORIAS
 ===================================================================== */
 function renderCategoriasTable(){
   document.getElementById('categorias-table').innerHTML = categorias.map(c=>{
@@ -969,7 +969,7 @@ async function excluirCategoria(id){
 }
 
 /* =====================================================================
-   PAINEL — SEO DO SITE
+   PAINEL: SEO DO SITE
 ===================================================================== */
 function showSitemap(){
   const box = document.getElementById('sitemap-preview');
