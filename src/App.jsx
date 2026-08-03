@@ -448,8 +448,31 @@ const PREVIEW_SYMBOLS = [
   { label: "Cobra", category: "transformacao" },
 ];
 
+const FEATURES = [
+  { icon: Sparkles, title: "Dicionário de símbolos", desc: "Escreva o sonho como veio até você — a gente reconhece os elementos e monta a interpretação na hora." },
+  { icon: Moon, title: "Constelação visual", desc: "Cada símbolo reconhecido vira uma estrela no seu mapa, conectada às outras da mesma história." },
+  { icon: ImageIcon, title: "Imagem gerada por IA", desc: "Transforme o relato do sonho numa ilustração, com a sua própria conta na OpenAI." },
+  { icon: BookOpen, title: "Histórico privado", desc: "Todo sonho salvo fica só seu — protegido por login, visível apenas para você." },
+];
+
 function LoginScreen({ categories }) {
   const [error, setError] = useState(null);
+  const [blogPosts, setBlogPosts] = useState([]);
+  const blogBaseUrl = import.meta.env.BASE_URL + "blog/";
+
+  useEffect(() => {
+    loadBlogPosts();
+  }, []);
+
+  async function loadBlogPosts() {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("titulo, resumo, slug, data")
+      .eq("status", "publicado")
+      .order("data", { ascending: false })
+      .limit(3);
+    if (!error) setBlogPosts(data ?? []);
+  }
 
   async function handleGoogleLogin() {
     setError(null);
@@ -464,47 +487,93 @@ function LoginScreen({ categories }) {
   }
 
   return (
-    <div className="oracle-root landing-root">
+    <div className="oracle-root" style={{ padding: 0 }}>
       <OracleStyles />
-      <Starfield />
-      <div className="landing-constellation">
-        <Constellation matches={PREVIEW_SYMBOLS.map((s, i) => ({ ...s, id: `preview-${i}` }))} onSelect={() => {}} selectedId={null} categories={categories} />
-      </div>
-      <div className="max-w-2xl mx-auto text-center relative z-10">
-        <div className="oracle-eyebrow mb-2 justify-center flex items-center gap-2">
-          <Moon size={12} /> onírica
-        </div>
-        <h1 className="oracle-title">
-          O que seu sonho <em>quis dizer</em>
-        </h1>
-        <p className="oracle-sub mx-auto mt-2">
-          Escreva o sonho como ele veio até você. A gente cruza o texto com um
-          dicionário de símbolos e monta um mapa — cada elemento reconhecido
-          vira uma estrela, e juntas elas contam a mesma história por outro ângulo.
-        </p>
 
-        <div className="preview-tags mt-8 mb-10">
-          {PREVIEW_SYMBOLS.map((s) => (
-            <span key={s.label} className="preview-tag" style={{ borderColor: getCategoryMeta(categories, s.category).color }}>
-              {s.label}
-            </span>
+      {/* HERO */}
+      <div className="landing-root" style={{ minHeight: "auto", padding: "9vh 24px 6vh" }}>
+        <Starfield />
+        <div className="landing-constellation">
+          <Constellation matches={PREVIEW_SYMBOLS.map((s, i) => ({ ...s, id: `preview-${i}` }))} onSelect={() => {}} selectedId={null} categories={categories} />
+        </div>
+        <div className="max-w-2xl mx-auto text-center relative z-10">
+          <div className="oracle-eyebrow mb-2 justify-center flex items-center gap-2">
+            <Moon size={12} /> onírica
+          </div>
+          <h1 className="oracle-title">
+            O que seu sonho <em>quis dizer</em>
+          </h1>
+          <p className="oracle-sub mx-auto mt-2">
+            Escreva o sonho como ele veio até você. A gente cruza o texto com um
+            dicionário de símbolos e monta um mapa — cada elemento reconhecido
+            vira uma estrela, e juntas elas contam a mesma história por outro ângulo.
+          </p>
+
+          <div className="preview-tags mt-8 mb-10">
+            {PREVIEW_SYMBOLS.map((s) => (
+              <span key={s.label} className="preview-tag" style={{ borderColor: getCategoryMeta(categories, s.category).color }}>
+                {s.label}
+              </span>
+            ))}
+          </div>
+
+          <div className="cta-row">
+            <button onClick={handleGoogleLogin} className="btn-google">
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/>
+                <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03z"/>
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"/>
+              </svg>
+              Continuar com Google
+            </button>
+            <a href={blogBaseUrl} className="btn-ghost" style={{ padding: "12px 22px" }}>Ler o blog</a>
+          </div>
+          {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
+          <p className="text-xs opacity-40 mt-6">
+            Seus sonhos ficam privados — só você tem acesso ao seu histórico.
+          </p>
+        </div>
+      </div>
+
+      {/* FUNCIONALIDADES */}
+      <div className="max-w-4xl mx-auto relative z-10" style={{ padding: "6vh 24px" }}>
+        <div className="text-center mb-10">
+          <div className="oracle-eyebrow mb-2">como funciona</div>
+          <h2 className="oracle-title" style={{ fontSize: "clamp(24px,3.4vw,34px)" }}>O que o Onírica faz</h2>
+        </div>
+        <div className="feature-grid">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="feature-card">
+              <div className="feature-icon"><f.icon size={18} /></div>
+              <div className="feature-title">{f.title}</div>
+              <p className="feature-desc">{f.desc}</p>
+            </div>
           ))}
         </div>
-
-        <button onClick={handleGoogleLogin} className="btn-google">
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
-            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/>
-            <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03z"/>
-            <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"/>
-          </svg>
-          Continuar com Google
-        </button>
-        {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
-        <p className="text-xs opacity-40 mt-6">
-          Seus sonhos ficam privados — só você tem acesso ao seu histórico.
-        </p>
       </div>
+
+      {/* DO BLOG */}
+      {blogPosts.length > 0 && (
+        <div className="max-w-4xl mx-auto relative z-10" style={{ padding: "4vh 24px 8vh" }}>
+          <div className="text-center mb-10">
+            <div className="oracle-eyebrow mb-2">do blog</div>
+            <h2 className="oracle-title" style={{ fontSize: "clamp(24px,3.4vw,34px)" }}>Textos sobre sonhos</h2>
+          </div>
+          <div className="feature-grid">
+            {blogPosts.map((p) => (
+              <a key={p.slug} href={`${blogBaseUrl}?post=${p.slug}`} className="feature-card" style={{ cursor: "pointer" }}>
+                <div className="post-card-date">{new Date(p.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}</div>
+                <div className="feature-title">{p.titulo}</div>
+                <p className="feature-desc">{p.resumo}</p>
+              </a>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <a href={blogBaseUrl} className="btn-ghost">Ver todos os posts →</a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -780,6 +849,60 @@ function OracleStyles() {
         max-width: 420px;
         margin-left: auto;
         margin-right: auto;
+      }
+      .cta-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .feature-card {
+        background: var(--panel-2);
+        border: 1px solid rgba(201,195,224,0.12);
+        border-radius: 8px;
+        padding: 22px 20px;
+        display: block;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+      a.feature-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--amber);
+      }
+      .feature-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: rgba(232,168,87,0.15);
+        color: var(--amber);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+      .feature-title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 17px;
+        color: var(--moon);
+        margin-bottom: 6px;
+      }
+      .feature-desc {
+        font-size: 13.5px;
+        color: var(--lavender);
+        line-height: 1.6;
+      }
+      .post-card-date {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 8px;
       }
       .landing-root {
         min-height: 100vh;
