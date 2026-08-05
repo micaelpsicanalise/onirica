@@ -56,7 +56,7 @@ function TopNav({ session }) {
 
   return (
     <nav className="topnav">
-      <a href={base} className="topnav-brand">Onírica</a>
+      <a href={base + "?home=1"} className="topnav-brand">Onírica</a>
       <div className="topnav-links">
         <a href={base + "blog/"}>Linguagem dos Sonhos</a>
         {isAdmin && !isAdminRoute && <a href="?admin=1">Admin</a>}
@@ -480,11 +480,12 @@ const FEATURES = [
   { icon: BookOpen, title: "Histórico privado", desc: "Todo sonho salvo fica só seu, protegido por login, visível apenas para você." },
 ];
 
-function LoginScreen({ categories }) {
+function LoginScreen({ categories, session }) {
   const [error, setError] = useState(null);
   const [blogPosts, setBlogPosts] = useState([]);
   const [blogCategories, setBlogCategories] = useState([]);
   const blogBaseUrl = import.meta.env.BASE_URL + "blog/";
+  const appBaseUrl = import.meta.env.BASE_URL;
 
   useEffect(() => {
     loadBlogPosts();
@@ -524,7 +525,7 @@ function LoginScreen({ categories }) {
   return (
     <div className="oracle-root">
       <OracleStyles />
-      <TopNav session={null} />
+      <TopNav session={session} />
 
       {/* HERO */}
       <div className="landing-root" style={{ minHeight: "auto", padding: "9vh 24px 6vh" }}>
@@ -554,21 +555,29 @@ function LoginScreen({ categories }) {
           </div>
 
           <div className="cta-row">
-            <button onClick={handleGoogleLogin} className="btn-google">
-              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
-                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/>
-                <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03z"/>
-                <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"/>
-              </svg>
-              Continuar com Google
-            </button>
+            {session ? (
+              <a href={appBaseUrl} className="btn-google" style={{ textDecoration: "none" }}>
+                <Sparkles size={16} /> Ir para o app
+              </a>
+            ) : (
+              <button onClick={handleGoogleLogin} className="btn-google">
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/>
+                  <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03z"/>
+                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"/>
+                </svg>
+                Continuar com Google
+              </button>
+            )}
             <a href={blogBaseUrl} className="btn-ghost" style={{ padding: "12px 22px" }}>Linguagem dos Sonhos</a>
           </div>
           {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
-          <p className="text-xs opacity-40 mt-6">
-            Seus sonhos ficam privados. Só você tem acesso ao seu histórico.
-          </p>
+          {!session && (
+            <p className="text-xs opacity-40 mt-6">
+              Seus sonhos ficam privados. Só você tem acesso ao seu histórico.
+            </p>
+          )}
         </div>
       </div>
 
@@ -1396,6 +1405,7 @@ export default function App() {
   const [session, setSession] = useState(undefined); // undefined = ainda carregando
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const isAdminRoute = new URLSearchParams(window.location.search).get("admin") === "1";
+  const isHomeRoute = new URLSearchParams(window.location.search).get("home") === "1";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -1412,6 +1422,7 @@ export default function App() {
   }
 
   if (session === undefined) return null; // ou um spinner, se preferir
+  if (isHomeRoute) return <LoginScreen categories={categories} session={session} />;
   if (!session) return <LoginScreen categories={categories} />;
   if (isAdminRoute) return <AdminPage session={session} categories={categories} reloadCategories={loadCategories} />;
   return <DreamOracle session={session} categories={categories} />;
